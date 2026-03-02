@@ -11,7 +11,7 @@ export default async function InboundPage() {
     { header: 'Supplier', accessor: 'supplier' },
     { header: 'ETA', accessor: 'eta' },
     { header: 'Status', accessor: 'status' },
-  ] as const
+  ]
 
   return (
     <div className="p-8 space-y-8">
