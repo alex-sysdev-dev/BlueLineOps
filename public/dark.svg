@@ -1,0 +1,36 @@
+<svg width="390" height="110" viewBox="0 0 390 110" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Icon -->
+  <g transform="translate(10,15)">
+    
+    <!-- Outer Circle -->
+    <circle cx="40" cy="40" r="32" fill="#0B1220"/>
+    <circle cx="40" cy="40" r="32" stroke="#3B82F6" stroke-width="3" fill="none"/>
+
+    <!-- Growth Line -->
+    <polyline points="20,50 35,38 48,42 62,28"
+      fill="none"
+      stroke="#3B82F6"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+
+    <!-- Arrow Head -->
+    <polygon points="62,28 56,29 60,23" fill="#3B82F6"/>
+
+    <!-- Truck Body -->
+    <rect x="18" y="58" width="38" height="14" rx="2" fill="#1E293B"/>
+    <rect x="48" y="62" width="16" height="10" rx="2" fill="#334155"/>
+
+    <!-- Wheels -->
+    <circle cx="28" cy="74" r="4" fill="#0B1220"/>
+    <circle cx="52" cy="74" r="4" fill="#0B1220"/>
+
+  </g>
+
+  <!-- Text -->
+  <text x="110" y="65" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="600"><tspan fill="#3B82F6">Blue</tspan><tspan fill="#FFFFFF">LineOps</tspan></text>
+
+</svg>
+
+
