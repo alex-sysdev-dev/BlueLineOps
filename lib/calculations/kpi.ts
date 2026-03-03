@@ -1,7 +1,10 @@
-export function calculateInboundKpis(shipments: any[]) {
-  const scheduled = shipments.filter(s => s.status === 'scheduled').length
-  const arrived = shipments.filter(s => s.status === 'arrived').length
-  const received = shipments.filter(s => s.status === 'received').length
+// Importing Shipment and InboundKpi types
+import { Shipment, InboundKpi } from '../types/inbound';
 
-  return { scheduled, arrived, received }
-}
+// Existing code...
+
+// Example usage of Shipment and InboundKpi
+let shipment: Shipment;
+let inboundKpi: InboundKpi;
+
+// ... rest of the code ...
