@@ -1,15 +1,8 @@
-import { supabase } from '@/lib/supabase'
+import { Shipment } from '../types/inbound';
 
-export async function getInboundShipments() {
-  const { data, error } = await supabase
-    .from('inbound_shipments')
-    .select('*')
-    .order('eta', { ascending: true })
+// Existing code...
 
-  if (error) {
-    console.error('Inbound fetch error:', error)
-    throw error
-  }
-
-  return data
+// Example of using Shipment type
+function processShipment(shipment: Shipment) {
+    // Processing logic... 
 }
