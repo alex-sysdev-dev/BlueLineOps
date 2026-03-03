@@ -1,10 +1,11 @@
-// Importing Shipment and InboundKpi types
-import { Shipment, InboundKpi } from '../types/inbound';
+import { Shipment, InboundKpi } from '@/types/inbound'
 
-// Existing code...
-
-// Example usage of Shipment and InboundKpi
-let shipment: Shipment;
-let inboundKpi: InboundKpi;
-
-// ... rest of the code ...
+export function calculateInboundKpis(shipments: Shipment[]): InboundKpi {
+  return shipments.reduce(
+    (acc, shipment) => {
+      acc[shipment.status]++
+      return acc
+    },
+    { scheduled: 0, arrived: 0, received: 0 }
+  )
+}
