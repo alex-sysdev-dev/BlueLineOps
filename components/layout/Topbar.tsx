@@ -7,7 +7,7 @@ export default function Topbar() {
       {/* Mobile Logo (Hidden on desktop since sidebar has it) */}
       <div className="md:hidden">
         <Link href="/">
-          <Image src="/dark.svg" alt="Logo" width={24} height={24} />
+          <Image src="/login.svg" alt="BlueLineOps icon" width={24} height={24} />
         </Link>
       </div>
       

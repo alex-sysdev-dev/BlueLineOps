@@ -1,18 +1,35 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<svg width="96" height="96" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringBlue" x1="8" y1="8" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.2" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
 
-  <circle cx="32" cy="32" r="30" fill="#eef0f4de" stroke="#1D4ED8" stroke-width="3"/>
+  <circle cx="40" cy="40" r="32" fill="#0B1220" />
+  <circle cx="40" cy="40" r="32" fill="none" stroke="#334155" stroke-width="1.5" />
+  <circle cx="40" cy="40" r="30.5" fill="none" stroke="url(#ringBlue)" stroke-width="3.2" filter="url(#softGlow)" />
 
-  <polyline points="16,36 26,28 36,30 46,20"
+  <polyline
+    points="20,50 33,39 45,43 60,28"
     fill="none"
-    stroke="#1D4ED8"
-    stroke-width="3"
+    stroke="url(#ringBlue)"
+    stroke-width="4.4"
     stroke-linecap="round"
-    stroke-linejoin="round"/>
+    stroke-linejoin="round"
+    filter="url(#softGlow)"
+  />
+  <polygon points="60,28 53,29.5 58,22.4" fill="#60A5FA" filter="url(#softGlow)" />
 
-  <rect x="18" y="40" width="22" height="8" rx="2" fill="#1E293B"/>
-  <rect x="40" y="42" width="8" height="6" rx="2" fill="#334155"/>
-
-  <circle cx="24" cy="50" r="3" fill="#283552"/>
-  <circle cx="42" cy="50" r="3" fill="#232f4c"/>
-
+  <rect x="18" y="57" width="37" height="13" rx="2.5" fill="#1E293B" />
+  <rect x="48" y="60.5" width="14" height="9.5" rx="2" fill="#334155" />
+  <circle cx="28" cy="71.5" r="3.6" fill="#0F172A" />
+  <circle cx="51" cy="71.5" r="3.6" fill="#0F172A" />
 </svg>

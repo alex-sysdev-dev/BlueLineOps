@@ -12,6 +12,7 @@ const links = [
   { name: "Forecasting", href: "/forecasting" },
   { name: "Associates", href: "/associates" },
   { name: "YMS", href: "/yms" },
+  { name: "Yard", href: "/yms/yard" },
 ]
 
 export default function Sidebar() {
@@ -38,7 +39,7 @@ export default function Sidebar() {
       <div>
         <Link href="/">
           <div className="flex items-center gap-3 p-6 text-xl font-semibold cursor-pointer">
-            <Image src="/dark.svg" alt="Logo" width={28} height={28} />
+            <Image src="/login.svg" alt="BlueLineOps icon" width={28} height={28} />
             <span>
               <span className="text-blue-500">Blue</span>
               <span className="text-zinc-100">LineOps</span>

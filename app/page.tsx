@@ -1,48 +1,45 @@
-import Link from "next/link"
 import Image from "next/image"
+import LandingKpiTile from "@/components/landing/LandingKpiTile"
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden text-zinc-100 bg-[radial-gradient(1200px_circle_at_50%_-10%,rgba(71,85,105,0.25),transparent_55%),radial-gradient(700px_circle_at_100%_0%,rgba(30,64,175,0.12),transparent_52%),linear-gradient(180deg,#111315_0%,#0b0d10_100%)]">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.04),transparent_35%),radial-gradient(circle_at_80%_80%,rgba(148,163,184,0.06),transparent_40%)]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/10 blur-[140px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 text-center flex flex-col items-center w-full">
         
         {/* Logo Image & Text */}
-        <div className="flex flex-col items-center gap-4">
-          <Image 
-            src="/login.svg" 
-            alt="BlueLineOps Logo" 
-            width={120} 
-            height={120} 
-            className="drop-shadow-xl"
+        <div className="flex flex-col items-center gap-6">
+          <Image
+            src="/login.svg"
+            alt="BlueLineOps Logo"
+            width={340}
+            height={340}
+            className="relative z-0 h-[230px] w-[230px] md:h-[330px] md:w-[330px] -mb-8 md:-mb-12 object-contain opacity-90 contrast-125 saturate-125 drop-shadow-[0_18px_28px_rgba(2,6,23,0.7)] drop-shadow-[0_0_22px_rgba(59,130,246,0.28)]"
           />
-          <h1 className="text-7xl md:text-9xl font-bold tracking-tighter">
-            <span className="text-blue-600">Blue</span>
-            <span className="text-white-90">LineOps</span>
+          <h1 className="relative z-10 text-7xl md:text-9xl font-bold tracking-tighter">
+            <span className="text-blue-400">Blue</span>
+            <span className="text-zinc-200">LineOps</span>
           </h1>
         </div>
         
-        <p className="mt-6 text-xl md:text-2xl font-light text-white-90 max-w-lg">
+        <p className="mt-6 text-xl md:text-2xl font-light text-zinc-300 max-w-lg">
           Operational Intelligence for Logistics
         </p>
 
         {/* High-End Glossy Hover Tiles */}
         <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl px-6">
-          <Link href="/login" className="group">
-            <div className="h-full flex flex-col items-center justify-center p-8 rounded-2xl bg-white/90 backdrop-blur-xl border border-zinc-200/50 transition-all duration-500 ease-out shadow-sm hover:scale-[1.02] hover:bg-white hover:border-zinc-300 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] cursor-pointer">
-              <span className="text-2xl font-medium mb-2 text-zinc-800 group-hover:text-blue-600 transition-colors duration-500">Sign In</span>
-              <span className="text-sm text-zinc-500 transition-colors duration-500">Admin Access</span>
-            </div>
-          </Link>
-
-          <Link href="/dashboard" className="group">
-            <div className="h-full flex flex-col items-center justify-center p-8 rounded-2xl bg-white/90 backdrop-blur-xl border border-zinc-200/50 transition-all duration-500 ease-out shadow-sm hover:scale-[1.02] hover:bg-white hover:border-blue-200 hover:shadow-[0_20px_40px_-15px_rgba(37,99,235,0.1)] cursor-pointer">
-              <span className="text-2xl font-medium mb-2 text-zinc-800 group-hover:text-blue-600 transition-colors duration-500">Dashboard</span>
-              <span className="text-sm text-zinc-500 transition-colors duration-500">Enter operations</span>
-            </div>
-          </Link>
+          <LandingKpiTile
+            href="/login"
+            title="Sign In"
+            subtitle="Admin Access"
+          />
+          <LandingKpiTile
+            href="/dashboard"
+            title="Dashboard"
+            subtitle="Enter operations"
+          />
         </div>
       </div>
     </div>

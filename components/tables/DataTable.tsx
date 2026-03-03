@@ -1,47 +1,49 @@
-type Column<T> = {
+export type Column<T> = {
   header: string
   accessor: keyof T
 }
 
-type Props<T> = {
+type DataTableProps<T> = {
   columns: Column<T>[]
   data: T[]
 }
 
-export default function DataTable<T extends Record<string, any>>({
+export default function DataTable<T>({
   columns,
   data,
-}: Props<T>) {
+}: DataTableProps<T>) {
   return (
-    <div className="border border-zinc-800 rounded-xl overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-zinc-900">
-          <tr>
+    <table className="min-w-full border-collapse text-sm">
+      <thead>
+        <tr className="text-left text-zinc-300 border-b border-white/10">
+          {columns.map((col) => (
+            <th
+              key={String(col.accessor)}
+              className="px-6 py-3 font-semibold"
+            >
+              {col.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {data.map((row, i) => (
+          <tr
+            key={i}
+            className="border-b border-white/5 hover:bg-white/5 text-zinc-200"
+          >
             {columns.map((col) => (
-              <th
+              <td
                 key={String(col.accessor)}
-                className="text-left p-4 text-zinc-400 font-medium"
+                className="px-6 py-3"
               >
-                {col.header}
-              </th>
+                {String(row[col.accessor])}
+              </td>
             ))}
           </tr>
-        </thead>
-        <tbody>
-          {data.map((row, i) => (
-            <tr
-              key={i}
-              className="border-t border-zinc-800 hover:bg-zinc-900/50"
-            >
-              {columns.map((col) => (
-                <td key={String(col.accessor)} className="p-4">
-                  {String(row[col.accessor] ?? '')}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   )
 }
