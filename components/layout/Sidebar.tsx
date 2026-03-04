@@ -3,11 +3,12 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 const links = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Inbound", href: "/inbound" },
+  { name: "QA", href: "/qa" },
   { name: "Outbound", href: "/outbound" },
   { name: "Forecasting", href: "/forecasting" },
   { name: "Associates", href: "/associates" },
@@ -17,12 +18,9 @@ const links = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const [isDark, setIsDark] = useState(true)
-
-  // Sync state with HTML class on mount
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"))
-  }, [])
+  const [isDark, setIsDark] = useState(() =>
+    typeof document === "undefined" ? true : document.documentElement.classList.contains("dark")
+  )
 
   const toggleTheme = () => {
     if (isDark) {
