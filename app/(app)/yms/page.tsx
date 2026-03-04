@@ -1,12 +1,26 @@
 import Link from 'next/link'
 import KpiTile from '@/components/kpi/KpiTile'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
-import { getYardSpots } from '@/lib/queries/yms'
+import { getYmsDashboardData } from '@/lib/queries/yms'
+
+const CLOSED_ORDER_TOKENS = ['cancel', 'close', 'complete', 'ship', 'deliver']
+
+function isClosedOrder(status: string | null | undefined): boolean {
+  const value = status?.trim().toLowerCase()
+  if (!value) {
+    return false
+  }
+
+  return CLOSED_ORDER_TOKENS.some((token) => value.includes(token))
+}
 
 export default async function YmsOverviewPage() {
-  const yardSpots = normalizeYardSpots(await getYardSpots())
+  const { yardSpots: yardSpotRows, warehouses, trailers, orders } = await getYmsDashboardData()
+  const yardSpots = normalizeYardSpots(yardSpotRows)
   const summary = summarizeYard(yardSpots)
   const occupancyRate = summary.total > 0 ? Number(((summary.occupied / summary.total) * 100).toFixed(1)) : 0
+  const openOrders = orders.filter((order) => !isClosedOrder(order.status)).length
+  const trailersInYard = trailers.filter((trailer) => Boolean(trailer.current_spot_id)).length
 
   const zoneCounts = Array.from(
     yardSpots.reduce((map, spot) => {
@@ -21,7 +35,10 @@ export default async function YmsOverviewPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">YMS Overview</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            <span className="text-blue-500">YMS</span>{' '}
+            <span className="text-[var(--foreground)]">Overview</span>
+          </h1>
           <p className="text-zinc-400 mt-2">Live yard health, utilization, and spot availability.</p>
         </div>
 
@@ -38,6 +55,9 @@ export default async function YmsOverviewPage() {
         <KpiTile title="Occupied Spots" value={summary.occupied} accent="text-red-200 group-hover:text-red-100" />
         <KpiTile title="Available Spots" value={summary.available} accent="text-emerald-200 group-hover:text-emerald-100" />
         <KpiTile title="Yard Occupancy" value={occupancyRate} suffix="%" accent="text-blue-100 group-hover:text-blue-50" />
+        <KpiTile title="Warehouses" value={warehouses.length} accent="text-violet-100 group-hover:text-violet-50" />
+        <KpiTile title="Trailers In Yard" value={trailersInYard} accent="text-cyan-100 group-hover:text-cyan-50" />
+        <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -64,7 +84,7 @@ export default async function YmsOverviewPage() {
         </section>
 
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
-          <h2 className="text-xl font-semibold text-zinc-100">Top Zones</h2>
+          <h2 className="text-xl font-semibold text-zinc-100">Top Warehouses / Zones</h2>
           <div className="mt-4 space-y-3">
             {zoneCounts.length === 0 ? (
               <p className="text-sm text-zinc-400">No yard spots found in `yard_spots`.</p>

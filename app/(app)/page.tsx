@@ -3,6 +3,10 @@ import KpiTile from "@/components/kpi/KpiTile"
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
+      <h1 className="text-3xl font-semibold tracking-tight">
+        <span className="text-blue-500">Operations</span>{' '}
+        <span className="text-[var(--foreground)]">Dashboard</span>
+      </h1>
 
       {/* KPI ROW */}
       <div className="grid grid-cols-4 gap-6">

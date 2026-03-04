@@ -16,7 +16,10 @@ export default async function InboundPage() {
 
   return (
     <div className="p-8 space-y-8">
-      <h1 className="text-2xl font-semibold">Inbound Dashboard</h1>
+      <h1 className="text-2xl font-semibold">
+        <span className="text-blue-500">Inbound</span>{' '}
+        <span className="text-[var(--foreground)]">Dashboard</span>
+      </h1>
 
       <div className="grid grid-cols-4 gap-6">
         <KpiTile title="Scheduled" value={kpis.scheduled} />

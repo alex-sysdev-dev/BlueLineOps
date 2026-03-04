@@ -2,10 +2,10 @@ import type { NormalizedYardSpot, YardSpotRow, YardSpotStatus, YardSummary } fro
 
 const ROW_KEYS = ['row', 'row_index', 'y']
 const COLUMN_KEYS = ['column', 'col', 'col_index', 'x']
-const LABEL_KEYS = ['spot_code', 'spot_name', 'label', 'name', 'spot_id', 'id']
-const ZONE_KEYS = ['zone', 'area', 'yard_section']
+const LABEL_KEYS = ['spot_label', 'spot_code', 'spot_name', 'label', 'name', 'spot_id', 'id']
+const ZONE_KEYS = ['warehouse_name', 'zone', 'area', 'yard_section', 'type']
 const STATUS_KEYS = ['status', 'state', 'availability']
-const TRAILER_KEYS = ['trailer_id', 'trailer_number', 'trailer']
+const TRAILER_KEYS = ['trailer_number', 'trailer_id', 'trailer']
 const UPDATED_KEYS = ['updated_at', 'last_updated']
 
 function toNumber(value: unknown): number | undefined {
@@ -75,7 +75,7 @@ function normalizeSpotBase(row: YardSpotRow, index: number): Omit<NormalizedYard
   row?: number
   column?: number
 } {
-  const id = pickString(row, ['id', 'spot_id', 'spot_code', 'name']) ?? `spot-${index + 1}`
+  const id = pickString(row, ['id', 'spot_id', 'spot_label', 'spot_code', 'name']) ?? `spot-${index + 1}`
   const label = pickString(row, LABEL_KEYS) ?? `Spot ${index + 1}`
   const zone = pickString(row, ZONE_KEYS) ?? 'General'
   const trailerId = pickString(row, TRAILER_KEYS)

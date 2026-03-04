@@ -6,8 +6,51 @@ export type YardSpotStatus =
   | 'maintenance'
   | 'unknown'
 
+export type WarehouseRow = {
+  id: string
+  name: string
+  location: string | null
+  square_feet: number | null
+  created_at: string | null
+}
+
+export type TrailerRow = {
+  id: string
+  trailer_number: string
+  carrier: string | null
+  warehouse_id: string | null
+  current_spot_id: string | null
+  status: string | null
+  arrived_at: string | null
+  departed_at: string | null
+}
+
+export type TrailerMoveRow = {
+  trailer_id: string
+  from_spot_id: string | null
+  to_spot_id: string
+  moved_at: string | null
+}
+
+export type OrderRow = {
+  id: string
+  order_number: string | null
+  client_name: string | null
+  status: string | null
+  order_date: string | null
+  yard_spots_id: string | null
+  trailer_id: string | null
+}
+
 export type YardSpotRow = {
   id?: string | number | null
+  spot_label?: string | null
+  type?: string | null
+  warehouse_id?: string | null
+  warehouse_name?: string | null
+  warehouse_location?: string | null
+  active_orders?: number | null
+
   spot_id?: string | number | null
   spot_code?: string | null
   spot_name?: string | null
@@ -57,4 +100,11 @@ export type YardSummary = {
   blocked: number
   maintenance: number
   unknown: number
+}
+
+export type YmsDashboardData = {
+  warehouses: WarehouseRow[]
+  trailers: TrailerRow[]
+  orders: OrderRow[]
+  yardSpots: YardSpotRow[]
 }
