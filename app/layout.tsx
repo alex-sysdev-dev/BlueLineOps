@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BlueLineOps",
   description: "Operational Platform for Fulfillment Centers",
+  icons: {
+    icon: "/login.svg",
+    shortcut: "/login.svg",
+    apple: "/login.svg",
+  },
 };
 
 export default function RootLayout({
