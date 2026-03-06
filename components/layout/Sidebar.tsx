@@ -10,6 +10,7 @@ const links = [
   { name: "Inbound", href: "/inbound" },
   { name: "QA", href: "/qa" },
   { name: "Outbound", href: "/outbound" },
+  { name: "Pick/Pack Floor", href: "/outbound/floor" },
   { name: "Forecasting", href: "/forecasting" },
   { name: "Associates", href: "/associates" },
   { name: "YMS", href: "/yms" },
