@@ -1,6 +1,7 @@
 import { getInboundItems, getInboundShipments } from '@/lib/queries/inbound'
 import { buildInboundStatusTrend, buildSupplierVolume } from '@/lib/calculations/inbound'
 import { calculateInboundKpis } from '@/lib/calculations/kpi'
+import { getCrossFunctionalKpis, getDockDoorCounts, getPutawayTasksCount } from '@/lib/queries/operations'
 import KpiTile from '@/components/kpi/KpiTile'
 import DataTable, { type Column } from '@/components/tables/DataTable'
 import LineCharts from '@/components/charts/LineCharts'
@@ -8,7 +9,13 @@ import BarChart from '@/components/charts/BarChart'
 import type { Shipment } from '@/types/inbound'
 
 export default async function InboundPage() {
-  const [shipments, inboundItems] = await Promise.all([getInboundShipments(), getInboundItems()])
+  const [shipments, inboundItems, crossKpis, dockDoors, putawayTasks] = await Promise.all([
+    getInboundShipments(),
+    getInboundItems(),
+    getCrossFunctionalKpis(),
+    getDockDoorCounts(),
+    getPutawayTasksCount(),
+  ])
   const kpis = calculateInboundKpis(shipments)
   const statusTrend = buildInboundStatusTrend(shipments)
   const supplierVolume = buildSupplierVolume(inboundItems)
@@ -26,11 +33,16 @@ export default async function InboundPage() {
         <span className="text-[var(--foreground)]">Dashboard</span>
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
         <KpiTile title="Scheduled" value={kpis.scheduled} />
         <KpiTile title="Arrived" value={kpis.arrived} />
         <KpiTile title="Received" value={kpis.received} />
         <KpiTile title="Accuracy" value={99.2} suffix="%" />
+        <KpiTile title="Inventory Risk SKUs" value={crossKpis.inventoryRiskSkus} accent="text-orange-100 group-hover:text-orange-50" />
+        <KpiTile title="Inbound QA Pending" value={crossKpis.inboundQaPending} accent="text-yellow-100 group-hover:text-yellow-50" />
+        <KpiTile title="Inbound QA Blocked" value={crossKpis.inboundQaBlocked} accent="text-rose-100 group-hover:text-rose-50" />
+        <KpiTile title="Inbound Dock Doors" value={dockDoors.inboundDockDoors} accent="text-blue-100 group-hover:text-blue-50" />
+        <KpiTile title="Putaway Tasks" value={putawayTasks} accent="text-emerald-100 group-hover:text-emerald-50" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

@@ -8,8 +8,6 @@ export default function LandingPage() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/10 blur-[140px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 text-center flex flex-col items-center w-full">
-        
-        {/* Logo Image & Text */}
         <div className="flex flex-col items-center gap-6">
           <Image
             src="/login.svg"
@@ -28,17 +26,11 @@ export default function LandingPage() {
           Operational Intelligence for Logistics
         </p>
 
-        {/* High-End Glossy Hover Tiles */}
-        <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl px-6">
-          <LandingKpiTile
-            href="/login"
-            title="Sign In"
-            subtitle="Admin Access"
-          />
+        <div className="mt-12 w-full max-w-md px-6">
           <LandingKpiTile
             href="/dashboard"
-            title="Dashboard"
-            subtitle="Enter operations"
+            title="Enterprise Login"
+            subtitle="Continue with SSO"
           />
         </div>
       </div>

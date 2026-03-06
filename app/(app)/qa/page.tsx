@@ -4,10 +4,15 @@ import BarChart from '@/components/charts/BarChart'
 import DataTable, { type Column } from '@/components/tables/DataTable'
 import { buildInspectorBreakdown, buildQaTrend, calculateQaKpis } from '@/lib/calculations/qa'
 import { getQaInspections } from '@/lib/queries/qa'
+import { getCrossFunctionalKpis, getCycleCountTasksCount } from '@/lib/queries/operations'
 import type { QaInspection } from '@/types/qa'
 
 export default async function QaPage() {
-  const inspections = await getQaInspections()
+  const [inspections, crossKpis, cycleCount] = await Promise.all([
+    getQaInspections(),
+    getCrossFunctionalKpis(),
+    getCycleCountTasksCount(),
+  ])
   const kpis = calculateQaKpis(inspections)
   const trend = buildQaTrend(inspections, 14)
   const inspectorBreakdown = buildInspectorBreakdown(inspections, 8)
@@ -32,6 +37,10 @@ export default async function QaPage() {
         <KpiTile title="Passed" value={kpis.passed} />
         <KpiTile title="Failed" value={kpis.failed} />
         <KpiTile title="Pass Rate" value={kpis.passRate} suffix="%" />
+        <KpiTile title="Inventory Risk SKUs" value={crossKpis.inventoryRiskSkus} accent="text-orange-100 group-hover:text-orange-50" />
+        <KpiTile title="Inbound QA Blocked" value={crossKpis.inboundQaBlocked} accent="text-rose-100 group-hover:text-rose-50" />
+        <KpiTile title="Inbound QA Pending" value={crossKpis.inboundQaPending} accent="text-yellow-100 group-hover:text-yellow-50" />
+        <KpiTile title="CycleCount" value={cycleCount} accent="text-blue-100 group-hover:text-blue-50" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

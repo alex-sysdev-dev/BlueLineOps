@@ -2,6 +2,7 @@ import type {
   OutboundFloorData,
   OutboundFloorKpis,
   PackStation,
+  PickStationBoardRow,
   PickTask,
   StationHeatCell,
 } from '@/types/outbound'
@@ -17,6 +18,24 @@ function toTime(value: string | null): number {
 
   const parsed = Date.parse(value)
   return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function toDayKey(value: string | null): string | null {
+  if (!value) {
+    return null
+  }
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.valueOf())) {
+    return null
+  }
+
+  return parsed.toISOString().slice(0, 10)
+}
+
+function toDayLabel(key: string): string {
+  const date = new Date(`${key}T00:00:00`)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function computeLayout(rows: Array<Pick<PackStation, 'row' | 'column'>>): {
@@ -96,4 +115,113 @@ export function buildStationHeatmap(stations: PackStation[], tasks: PickTask[]):
   })
 
   return cells.sort((a, b) => a.row - b.row || a.column - b.column)
+}
+
+export function calculateThroughputUph(tasks: PickTask[]): number {
+  const now = Date.now()
+  const lookbackMs = 4 * 60 * 60 * 1000
+  const recentCompleted = tasks.filter((task) => {
+    if (task.status !== 'completed' && task.status !== 'packed') {
+      return false
+    }
+
+    const updatedAt = toTime(task.updatedAt)
+    return updatedAt > 0 && now - updatedAt <= lookbackMs
+  })
+
+  const units = recentCompleted.reduce((total, task) => total + Math.max(task.pickedQty, task.quantity), 0)
+  if (units > 0) {
+    return Math.round(units / 4)
+  }
+
+  const completedUnits = tasks
+    .filter((task) => task.status === 'completed' || task.status === 'packed')
+    .reduce((total, task) => total + Math.max(task.pickedQty, task.quantity), 0)
+
+  return Math.round(completedUnits / 8)
+}
+
+export function buildTaskFlowTrend(tasks: PickTask[], days = 10): {
+  labels: string[]
+  open: number[]
+  completed: number[]
+  blocked: number[]
+} {
+  const byDay = new Map<string, { open: number; completed: number; blocked: number }>()
+
+  for (const task of tasks) {
+    const dayKey = toDayKey(task.updatedAt ?? task.dueAt)
+    if (!dayKey) {
+      continue
+    }
+
+    const bucket = byDay.get(dayKey) ?? { open: 0, completed: 0, blocked: 0 }
+    if (task.status === 'completed' || task.status === 'packed') {
+      bucket.completed += 1
+    } else if (task.status === 'blocked') {
+      bucket.blocked += 1
+    } else {
+      bucket.open += 1
+    }
+
+    byDay.set(dayKey, bucket)
+  }
+
+  const keys = Array.from(byDay.keys()).sort((a, b) => a.localeCompare(b)).slice(-days)
+
+  return {
+    labels: keys.map(toDayLabel),
+    open: keys.map((key) => byDay.get(key)?.open ?? 0),
+    completed: keys.map((key) => byDay.get(key)?.completed ?? 0),
+    blocked: keys.map((key) => byDay.get(key)?.blocked ?? 0),
+  }
+}
+
+export function buildStationWorkload(stations: PackStation[], limit = 8): {
+  labels: string[]
+  utilization: number[]
+  queueDepth: number[]
+} {
+  const sorted = [...stations]
+    .sort((a, b) => b.utilization - a.utilization || b.queueDepth - a.queueDepth)
+    .slice(0, limit)
+
+  return {
+    labels: sorted.map((station) => station.label),
+    utilization: sorted.map((station) => Number(station.utilization.toFixed(0))),
+    queueDepth: sorted.map((station) => station.queueDepth),
+  }
+}
+
+export function buildPickStationBoard(tasks: PickTask[], limit = 16): PickStationBoardRow[] {
+  const byStation = new Map<string, PickStationBoardRow>()
+
+  for (const task of tasks) {
+    if (task.status === 'completed') {
+      continue
+    }
+
+    const key = task.assignedStation ?? `Zone ${task.zone}`
+    const current = byStation.get(key) ?? {
+      station: key,
+      zone: task.zone,
+      openTasks: 0,
+      unitsRemaining: 0,
+      avgPriority: 0,
+    }
+
+    current.openTasks += 1
+    current.unitsRemaining += task.remainingQty
+    current.avgPriority += task.priority
+    byStation.set(key, current)
+  }
+
+  const rows = Array.from(byStation.values()).map((row) => ({
+    ...row,
+    avgPriority: row.openTasks > 0 ? Number((row.avgPriority / row.openTasks).toFixed(1)) : 0,
+  }))
+
+  return rows
+    .sort((a, b) => b.unitsRemaining - a.unitsRemaining || b.openTasks - a.openTasks)
+    .slice(0, limit)
 }

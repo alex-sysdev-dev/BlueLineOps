@@ -2,6 +2,8 @@ import type { StationHeatCell } from '@/types/outbound'
 
 type Props = {
   cells: StationHeatCell[]
+  title?: string
+  description?: string
 }
 
 function statusTone(status: StationHeatCell['status']): string {
@@ -29,11 +31,15 @@ function heatOpacity(intensity: number): number {
   return Number((0.18 + (clamped / 100) * 0.58).toFixed(2))
 }
 
-export default function PickPackMap({ cells }: Props) {
+export default function PickPackMap({
+  cells,
+  title = "BlueLineOps Pick/Pack Floor",
+  description = 'Station heat is based on utilization, queue depth, and active task assignments.',
+}: Props) {
   if (cells.length === 0) {
     return (
       <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(140deg,rgba(3,7,18,0.96),rgba(15,23,42,0.9))] p-6">
-        <h2 className="text-xl font-semibold text-zinc-100">Bird&apos;s-Eye Pick/Pack Map</h2>
+        <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
         <p className="mt-3 text-sm text-zinc-400">No station rows found in `pick_pack_stations` yet.</p>
       </section>
     )
@@ -53,8 +59,8 @@ export default function PickPackMap({ cells }: Props) {
     <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(145deg,rgba(2,6,23,0.96),rgba(15,23,42,0.86))] p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-100">Bird&apos;s-Eye Pick/Pack Map</h2>
-          <p className="mt-1 text-sm text-zinc-400">Station heat is based on utilization, queue depth, and active task assignments.</p>
+          <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
+          <p className="mt-1 text-sm text-zinc-400">{description}</p>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-zinc-300">

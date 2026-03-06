@@ -6,15 +6,14 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 
 const links = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Inbound", href: "/inbound" },
-  { name: "QA", href: "/qa" },
-  { name: "Outbound", href: "/outbound" },
+  { name: "BlueLineOps Dashboard", href: "/dashboard" },
+  { name: "QA Dashboard", href: "/qa" },
+  { name: "Inbound Dashboard", href: "/inbound" },
+  { name: "Outbound Dashboard", href: "/outbound" },
   { name: "Pick/Pack Floor", href: "/outbound/floor" },
-  { name: "Forecasting", href: "/forecasting" },
-  { name: "Associates", href: "/associates" },
-  { name: "YMS", href: "/yms" },
+  { name: "YMS Overview", href: "/yms" },
   { name: "Yard", href: "/yms/yard" },
+  { name: "Forecasting", href: "/forecasting" },
 ]
 
 export default function Sidebar() {

@@ -16,7 +16,7 @@ export default function LandingKpiTile({
   hoverShadowClassName = "hover:shadow-[0_30px_65px_-24px_rgba(37,99,235,0.48)]",
 }: Props) {
   return (
-    <Link href={href} className="group">
+    <Link href={href} className="group block w-full">
       <div
         className={`
           relative isolate overflow-hidden

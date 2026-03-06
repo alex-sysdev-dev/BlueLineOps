@@ -85,6 +85,14 @@ export interface StationHeatCell {
   assignedTasks: number
 }
 
+export interface PickStationBoardRow {
+  station: string
+  zone: string
+  openTasks: number
+  unitsRemaining: number
+  avgPriority: number
+}
+
 export interface OutboundFloorData {
   tasks: PickTask[]
   stations: PackStation[]
