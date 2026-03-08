@@ -1,11 +1,19 @@
 type Props = {
   title: string
-  value: number
+  value: number | string
   accent?: string
   suffix?: string
 }
 
 export default function KpiTile({ title, value, accent, suffix }: Props) {
+  const displayValue =
+    typeof value === 'number'
+      ? value.toLocaleString(undefined, {
+          minimumFractionDigits: Number.isInteger(value) ? 0 : 1,
+          maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+        })
+      : value
+
   return (
     <div
       className="
@@ -36,7 +44,8 @@ export default function KpiTile({ title, value, accent, suffix }: Props) {
           accent ?? "text-white group-hover:text-blue-50"
         }`}
       >
-        {value.toLocaleString()}{suffix}
+        {displayValue}
+        {suffix}
       </div>
     </div>
   )

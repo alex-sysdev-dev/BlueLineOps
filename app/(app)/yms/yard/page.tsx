@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import KpiTile from '@/components/kpi/KpiTile'
+import YardLayoutPlan from '@/components/yard/YardLayoutPlan'
 import type { NormalizedYardSpot, YardSpotStatus } from '@/types/yms'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
+import { getFacilityLayoutData } from '@/lib/queries/layouts'
 
 type DockGroupKey = 'outbound' | 'inbound' | 'open' | 'flex'
 
@@ -92,7 +94,10 @@ function normalizeDockGroup(type: string | null | undefined): DockGroupKey {
 }
 
 export default async function YmsYardPage() {
-  const { yardSpots: yardSpotRows, orders } = await getYmsDashboardData()
+  const [{ yardSpots: yardSpotRows, orders }, layoutData] = await Promise.all([
+    getYmsDashboardData(),
+    getFacilityLayoutData('yard_main'),
+  ])
   const yardSpots = normalizeYardSpots(yardSpotRows).sort(sortByGridPosition)
   const summary = summarizeYard(yardSpots)
   const openOrders = orders.filter((order) => !isClosedOrder(order.status)).length
@@ -140,6 +145,10 @@ export default async function YmsYardPage() {
         <KpiTile title="Unknown" value={summary.unknown} accent="text-sky-100 group-hover:text-sky-50" />
         <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
+
+      {layoutData.layout && layoutData.items.length > 0 ? (
+        <YardLayoutPlan layoutData={layoutData} yardSpots={yardSpotRows} />
+      ) : null}
 
       {groupedSpots.map(({ dockGroup, spots }) => {
         const title = DOCK_GROUP_LABEL[dockGroup]

@@ -1,4 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
+import PickPackFloorPlan from '@/components/outbound/PickPackFloorPlan'
 import PickPackMap from '@/components/floor/PickPackMap'
 import {
   buildPickStationBoard,
@@ -7,6 +8,7 @@ import {
   calculateThroughputUph,
 } from '@/lib/calculations/outbound'
 import { getOutboundFloorData } from '@/lib/queries/outbound'
+import { getFacilityLayoutData } from '@/lib/queries/layouts'
 import type { PackStationStatus } from '@/types/outbound'
 
 function stationStatusBadge(status: PackStationStatus): string {
@@ -37,7 +39,10 @@ function capLabel(value: string): string {
 }
 
 export default async function PickPackFloorView() {
-  const data = await getOutboundFloorData()
+  const [data, layoutData] = await Promise.all([
+    getOutboundFloorData(),
+    getFacilityLayoutData('pick_pack_main'),
+  ])
   const floorKpis = calculateOutboundFloorKpis(data)
   const throughputUph = calculateThroughputUph(data.tasks)
   const heatCells = buildStationHeatmap(data.stations, data.tasks)
@@ -61,11 +66,15 @@ export default async function PickPackFloorView() {
         <KpiTile title="Avg. Utilization" value={floorKpis.avgUtilization} suffix="%" accent="text-blue-100 group-hover:text-blue-50" />
       </div>
 
-      <PickPackMap
-        cells={heatCells}
-        title="BlueLineOps Pick/Pack Floor"
-        description="Bird's-eye floor heat map for pack-station load balancing and live execution control."
-      />
+      {layoutData.layout && layoutData.items.length > 0 ? (
+        <PickPackFloorPlan layoutData={layoutData} data={data} />
+      ) : (
+        <PickPackMap
+          cells={heatCells}
+          title="BlueLineOps Pick/Pack Floor"
+          description="Bird's-eye floor heat map for pack-station load balancing and live execution control."
+        />
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">

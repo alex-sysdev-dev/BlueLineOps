@@ -7,8 +7,10 @@ import { useState } from "react"
 
 const links = [
   { name: "BlueLineOps Dashboard", href: "/dashboard" },
+  { name: "Associates Dashboard", href: "/associates" },
   { name: "QA Dashboard", href: "/qa" },
   { name: "Inbound Dashboard", href: "/inbound" },
+  { name: "Inbound Shipments", href: "/inbound/shipments" },
   { name: "Outbound Dashboard", href: "/outbound" },
   { name: "Pick/Pack Floor", href: "/outbound/floor" },
   { name: "YMS Overview", href: "/yms" },
