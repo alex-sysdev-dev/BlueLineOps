@@ -1,0 +1,330 @@
+BlueLineOps Operational Intelligence
+Agent Builder Click-By-Click UI Guide
+
+PURPOSE
+This guide is the literal UI walkthrough for building the first BlueLineOps agent in OpenAI Agent Builder.
+Use it alongside these reference files:
+- BlueLineOps Operational Intelligenc_first_agent.txt
+- BlueLineOps Operational Intelligenc_Node_config.txt
+- BlueLineOps Operational Intelligenc_classifier_schema.txt
+- BlueLineOps Operational Intelligenc_exact_tool_endpoint_list.txt
+- BlueLineOps Operational Intelligenc_starter_system_prompts_each_agent_node.txt
+
+ASSUMPTIONS
+- You are already in the OpenAI Platform Agent Builder canvas.
+- You want a read-only demo agent.
+- You are not allowing raw SQL generation.
+- Your app/API endpoints will be added separately.
+
+BUILD TARGET
+Workflow:
+Start -> Guardrails -> Classifier Agent -> If/Else -> Query Path -> Answer Agent -> End
+
+PART 1 - CREATE THE WORKFLOW
+
+1. Open OpenAI Platform.
+2. In the left navigation, click Agent Builder.
+3. Click Create.
+4. Name the workflow:
+   BlueLineOps Operational Intelligence
+5. Leave it as a draft.
+
+PART 2 - ADD THE START NODE
+
+1. On the canvas, confirm the Start node is present.
+2. Click the Start node once.
+3. In the right-side settings panel, do not overconfigure it.
+4. Leave input as the default user message input.
+5. If there is a state area, add these defaults if the UI supports state:
+   - app_name = BlueLineOps Operational Intelligence for Logistics
+   - mode = read_only_demo
+   - timezone = America/Chicago
+   - default_grain = hourly
+   - default_limit = 10
+6. Close the panel.
+
+PART 3 - ADD GUARDRAILS
+
+1. From the left tool panel, drag Guardrails onto the canvas.
+2. Place it to the right of Start.
+3. Connect Start -> Guardrails.
+4. Click Guardrails.
+5. Configure it to allow:
+   - KPI snapshot questions
+   - KPI trend questions
+   - CPT risk questions
+   - order lookup questions
+   - operational explanation questions
+6. Configure it to block:
+   - requests to insert, update, delete, alter, or drop data
+   - requests for secrets, keys, or credentials
+   - unrestricted raw SQL requests
+   - unrelated questions outside BlueLineOps operational intelligence scope
+7. If the node supports custom refusal text, use:
+   I can help with read-only BlueLineOps KPI, trend, CPT risk, and order lookup questions, but I cannot modify data or expose credentials.
+8. Save the node.
+
+PART 4 - ADD THE CLASSIFIER AGENT
+
+1. Drag an Agent node onto the canvas.
+2. Place it to the right of Guardrails.
+3. Connect Guardrails pass -> Classifier Agent.
+4. If Guardrails has a fail branch, connect fail -> End for now, or to a short refusal agent later.
+5. Click the Classifier Agent node.
+6. Rename it:
+   Classifier Agent
+7. Set the model to:
+   GPT-5-mini
+8. In the system instructions area, paste PROMPT 1 from:
+   BlueLineOps Operational Intelligenc_starter_system_prompts_each_agent_node.txt
+9. Find the structured output or response schema area.
+10. Create fields exactly as defined in:
+   BlueLineOps Operational Intelligenc_classifier_schema.txt
+11. Add these fields:
+   - intent
+   - metric
+   - grain
+   - order_reference
+   - risk_bucket
+   - limit
+   - start_date
+   - end_date
+   - requires_clarification
+   - clarification_question
+12. For enum fields, use the allowed values from the classifier schema file.
+13. Save the node.
+
+PART 5 - ADD THE ROUTER
+
+1. Drag an If / Else node onto the canvas.
+2. Place it to the right of Classifier Agent.
+3. Connect Classifier Agent -> If / Else.
+4. Click the If / Else node.
+5. Add conditions based on classifier output.intent.
+6. Create these branches in this order:
+   - snapshot
+   - trend
+   - max_lines
+   - cpt_risk
+   - order_lookup
+   - explanation
+   - unsupported
+7. Example condition style:
+   input.output_parsed.intent == "snapshot"
+8. Save the node.
+
+PART 6 - ADD QUERY NODES
+
+You now create one query node for each supported intent.
+For version 1, use Agent nodes or tool nodes that call fixed endpoints only.
+
+NODE A - FETCH SNAPSHOT
+1. Add an Agent node.
+2. Name it:
+   Fetch Snapshot
+3. Connect If/Else snapshot branch -> Fetch Snapshot.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 2 from the starter prompts file.
+6. If you already have a tool for your backend endpoint, attach it here.
+7. Configure it to call:
+   GET /api/agent/kpi-snapshot
+8. Save it.
+
+NODE B - FETCH TREND
+1. Add an Agent node.
+2. Name it:
+   Fetch Trend
+3. Connect If/Else trend branch -> Fetch Trend.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 3 from the starter prompts file.
+6. Configure it to call:
+   GET /api/agent/kpi-trend
+7. Required parameters:
+   - metric
+   - grain
+   - start
+   - end
+8. Map those values from classifier output.
+9. Save it.
+
+NODE C - FETCH MAX LINES
+1. Add an Agent node.
+2. Name it:
+   Fetch Max Lines
+3. Connect If/Else max_lines branch -> Fetch Max Lines.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 4 from the starter prompts file.
+6. Configure it to call:
+   GET /api/agent/max-lines
+7. Save it.
+
+NODE D - FETCH CPT RISK
+1. Add an Agent node.
+2. Name it:
+   Fetch CPT Risk
+3. Connect If/Else cpt_risk branch -> Fetch CPT Risk.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 5 from the starter prompts file.
+6. Configure it to call:
+   GET /api/agent/cpt-risk
+7. Map:
+   - bucket from classifier risk_bucket
+   - limit from classifier limit
+8. Save it.
+
+NODE E - FETCH ORDER STATUS
+1. Add an Agent node.
+2. Name it:
+   Fetch Order Status
+3. Connect If/Else order_lookup branch -> Fetch Order Status.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 6 from the starter prompts file.
+6. Configure it to call:
+   GET /api/agent/order-status
+7. Map order_reference to either id or order_number, depending on your backend logic.
+8. Save it.
+
+NODE F - CLARIFICATION
+1. Add an Agent node.
+2. Name it:
+   Clarification
+3. Connect any branch where requires_clarification is true to this node.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 7 from the starter prompts file.
+6. Save it.
+
+NODE G - UNSUPPORTED
+1. Add an Agent node.
+2. Name it:
+   Unsupported Response
+3. Connect unsupported branch -> Unsupported Response.
+4. Set model:
+   GPT-5-mini
+5. Paste PROMPT 8 from the starter prompts file.
+6. Save it.
+
+PART 7 - ADD THE ANSWER AGENT
+
+1. Add an Agent node.
+2. Place it to the right of all successful query nodes.
+3. Name it:
+   Answer Agent
+4. Set model:
+   GPT-5
+5. Paste PROMPT 9 from the starter prompts file.
+6. Connect these nodes into Answer Agent:
+   - Fetch Snapshot
+   - Fetch Trend
+   - Fetch Max Lines
+   - Fetch CPT Risk
+   - Fetch Order Status
+7. If you also want explanation mode in version 1, route explanation to either:
+   - Fetch Snapshot, then Answer Agent
+   or
+   - Fetch Trend, then Answer Agent
+8. Save it.
+
+PART 8 - ADD THE END NODE
+
+1. Confirm an End node exists.
+2. Connect:
+   - Answer Agent -> End
+   - Clarification -> End
+   - Unsupported Response -> End
+   - Guardrails fail -> End, if you did not create a separate refusal node
+3. Save the workflow.
+
+PART 9 - TEST IN PREVIEW
+
+1. Click Preview at the top of the canvas.
+2. Test these prompts one at a time:
+   - What is my current KPI snapshot?
+   - Show active orders trend for today.
+   - Show max lines for active orders, CPT risk, and safety.
+   - How many deadlined orders do I have right now?
+   - Show me the top 10 CPT risk orders.
+   - What is the status of order 100245?
+3. For each prompt, inspect:
+   - classifier output
+   - router branch taken
+   - endpoint or tool parameters
+   - raw tool result
+   - final answer
+
+PART 10 - WHAT TO FIX IF PREVIEW FAILS
+
+If classifier is wrong:
+1. Open Classifier Agent.
+2. tighten the instructions.
+3. verify enum values.
+4. test again.
+
+If router is wrong:
+1. Open If / Else.
+2. verify field path for intent.
+3. verify string matching.
+4. test again.
+
+If endpoint params are wrong:
+1. Open the query node.
+2. inspect parameter mapping.
+3. compare against:
+   BlueLineOps Operational Intelligenc_exact_tool_endpoint_list.txt
+4. test again.
+
+If answer is too vague:
+1. Open Answer Agent.
+2. tighten the response rules.
+3. tell it to lead with the number and time basis.
+4. test again.
+
+PART 11 - PUBLISH
+
+1. When Preview is stable, click Publish.
+2. Give the version a clear name:
+   BlueLineOps v1 Read-Only KPI Demo
+3. Save the workflow ID.
+4. Keep this version narrow.
+
+PART 12 - RECOMMENDED FIRST BUILD ORDER
+
+Do this in this exact order:
+1. Start
+2. Guardrails
+3. Classifier Agent
+4. If / Else
+5. Fetch Snapshot
+6. Fetch Trend
+7. Fetch Max Lines
+8. Fetch CPT Risk
+9. Fetch Order Status
+10. Clarification
+11. Unsupported Response
+12. Answer Agent
+13. End
+
+PART 13 - WHAT NOT TO DO FOR VERSION 1
+
+- Do not let the agent write raw SQL.
+- Do not connect it directly to unrestricted database tools.
+- Do not enable writes.
+- Do not try to solve every question type on day 1.
+- Do not skip Preview testing before Publish.
+
+PART 14 - MINIMUM SUCCESS CRITERIA
+
+The build is good enough for demo use when:
+- snapshot questions route correctly
+- trend questions route correctly
+- CPT risk questions route correctly
+- order lookup questions route correctly
+- unsupported requests are refused cleanly
+- no answers invent KPI values
+
+END OF GUIDE

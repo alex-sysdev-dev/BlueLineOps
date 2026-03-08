@@ -176,7 +176,10 @@ export default function YardLayoutPlan({ layoutData, yardSpots }: Props) {
         const stats = itemStats(item, yardSpots)
         const tone = zoneTone(item.item_type)
         const minimal = ['drive_lane'].includes(item.item_type)
-        const relatedSpots = spotsForItem(item.item_code, yardSpots).slice(0, 14)
+        const maxVisibleSpots = item.item_type === 'trailer_group' ? 7 : item.item_type === 'dock_group' ? 8 : 4
+        const allRelatedSpots = spotsForItem(item.item_code, yardSpots)
+        const relatedSpots = allRelatedSpots.slice(0, maxVisibleSpots)
+        const overflowCount = Math.max(0, allRelatedSpots.length - relatedSpots.length)
 
         return (
           <article className={`flex h-full w-full min-h-0 flex-col overflow-hidden rounded-md border px-2 py-1 ${tone} ${minimal ? 'justify-center' : 'justify-between'} shadow-sm`}>
@@ -191,7 +194,7 @@ export default function YardLayoutPlan({ layoutData, yardSpots }: Props) {
             ) : null}
 
             {!minimal && relatedSpots.length > 0 ? (
-              <div className="mt-2 grid grid-cols-7 gap-1">
+              <div className="mt-1 grid grid-cols-8 gap-1">
                 {relatedSpots.map((spot, index) => {
                   const status = String(spot.status ?? 'unknown').toLowerCase()
                   const chipTone =
@@ -213,6 +216,11 @@ export default function YardLayoutPlan({ layoutData, yardSpots }: Props) {
                     </div>
                   )
                 })}
+                {overflowCount > 0 ? (
+                  <div className="rounded border border-zinc-400/40 bg-zinc-700/30 px-1 py-0.5 text-center text-[7px] font-semibold leading-tight text-zinc-50">
+                    +{overflowCount}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </article>
