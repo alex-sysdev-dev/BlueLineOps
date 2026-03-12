@@ -228,7 +228,7 @@ function normalizePickTask(row: RawRow, index: number): PickTask {
 
 function normalizeStation(row: RawRow, index: number): PackStation {
   const id = pickString(row, ['id', 'station_id']) ?? `station-${index + 1}`
-  const label = pickString(row, ['station_code', 'name', 'label', 'id']) ?? `ST-${index + 1}`
+  const label = pickString(row, ['station_name', 'station_code', 'name', 'label', 'id']) ?? `ST-${index + 1}`
   const queueDepth = Math.max(0, pickNumber(row, ['queue_depth', 'queue', 'active_task_count', 'pending_tasks']) ?? 0)
 
   const rawUtilization = pickNumber(row, ['utilization', 'utilization_pct', 'utilization_percent'])
