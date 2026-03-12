@@ -51,6 +51,36 @@ function pickString(row: RawRow, keys: string[]): string | null {
   return null
 }
 
+function isUuidLike(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+function isGenericStationName(value: string | null): boolean {
+  if (!value) {
+    return false
+  }
+
+  const normalized = value.trim()
+  if (!normalized) {
+    return false
+  }
+
+  if (isUuidLike(normalized)) {
+    return true
+  }
+
+  return /^station[-\s]?[0-9a-f-]{8,}$/i.test(normalized)
+}
+
+function pickPreferredStationLabel(row: RawRow, primaryKeys: string[], fallbackKeys: string[]): string | null {
+  const primary = pickString(row, primaryKeys)
+  if (primary && !isGenericStationName(primary)) {
+    return primary
+  }
+
+  return pickString(row, fallbackKeys) ?? primary
+}
+
 function pickNumber(row: RawRow, keys: string[]): number | null {
   for (const key of keys) {
     const value = row[key]
@@ -208,6 +238,12 @@ function normalizePickTask(row: RawRow, index: number): PickTask {
     pickNumber(row, ['priority', 'priority_score', 'priority_rank']),
     pickString(row, ['priority_label', 'priority_bucket'])
   )
+  const assignedStation = pickPreferredStationLabel(
+    row,
+    ['station_name'],
+    ['pack_station', 'station_code', 'station_id', 'assigned_station']
+  )
+  const assignedStationId = pickString(row, ['pick_pack_station_id'])
 
   return {
     id,
@@ -220,7 +256,8 @@ function normalizePickTask(row: RawRow, index: number): PickTask {
     quantity,
     pickedQty,
     remainingQty,
-    assignedStation: pickString(row, ['pack_station', 'station_code', 'station_id', 'assigned_station']),
+    assignedStationId,
+    assignedStation,
     dueAt: pickString(row, ['due_at', 'sla_at', 'ship_by', 'needed_by']),
     updatedAt: pickString(row, ['updated_at', 'started_at', 'created_at']),
   }
@@ -228,7 +265,8 @@ function normalizePickTask(row: RawRow, index: number): PickTask {
 
 function normalizeStation(row: RawRow, index: number): PackStation {
   const id = pickString(row, ['id', 'station_id']) ?? `station-${index + 1}`
-  const label = pickString(row, ['station_name', 'station_code', 'name', 'label', 'id']) ?? `ST-${index + 1}`
+  const label =
+    pickPreferredStationLabel(row, ['station_name'], ['station_code', 'name', 'label', 'id']) ?? `ST-${index + 1}`
   const queueDepth = Math.max(0, pickNumber(row, ['queue_depth', 'queue', 'active_task_count', 'pending_tasks']) ?? 0)
 
   const rawUtilization = pickNumber(row, ['utilization', 'utilization_pct', 'utilization_percent'])
@@ -442,6 +480,26 @@ export async function getInboundQaQueue(): Promise<InboundQaQueueItem[]> {
   }
 }
 
+function resolveTaskStationAssignments(tasks: PickTask[], stations: PackStation[]): PickTask[] {
+  const stationById = new Map(stations.map((station) => [station.id, station]))
+
+  return tasks.map((task) => {
+    if (!task.assignedStationId) {
+      return task
+    }
+
+    const station = stationById.get(task.assignedStationId)
+    if (!station) {
+      return task
+    }
+
+    return {
+      ...task,
+      assignedStation: station.label,
+    }
+  })
+}
+
 export async function getOutboundFloorData(): Promise<OutboundFloorData> {
   const [tasks, stations, inventory, inboundQaQueue] = await Promise.all([
     getPickTasks(),
@@ -450,8 +508,10 @@ export async function getOutboundFloorData(): Promise<OutboundFloorData> {
     getInboundQaQueue(),
   ])
 
+  const resolvedTasks = resolveTaskStationAssignments(tasks, stations)
+
   return {
-    tasks,
+    tasks: resolvedTasks,
     stations,
     inventory,
     inboundQaQueue,

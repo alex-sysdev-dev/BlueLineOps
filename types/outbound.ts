@@ -26,6 +26,7 @@ export interface PickTask {
   quantity: number
   pickedQty: number
   remainingQty: number
+  assignedStationId: string | null
   assignedStation: string | null
   dueAt: string | null
   updatedAt: string | null
