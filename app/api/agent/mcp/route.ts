@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://bluelineopsok-efr4lp223-alex-sysdev-devs-projects.vercel.app/";
+const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://bluelineopsok-d06hvfgdm-alex-sysdev-devs-projects.vercel.app";
 
 const tools = [
   {
