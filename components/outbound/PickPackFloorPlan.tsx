@@ -176,7 +176,7 @@ function chipToneOnLight(kind: 'task' | 'qa', status: string): string {
 }
 
 function compactTaskLabel(task: PickTask): string {
-  const preferred = task.orderNumber ?? task.sku ?? task.taskNumber
+  const preferred = task.assignedStation ?? task.orderNumber ?? task.sku ?? task.taskNumber
 
   if (preferred.includes('-') && preferred.length > 16) {
     return preferred.slice(0, 8)

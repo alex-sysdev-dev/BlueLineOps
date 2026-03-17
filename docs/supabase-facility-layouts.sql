@@ -85,12 +85,12 @@ yard_items as (
   join (
     values
       ('yard_loop_road', 'YARD_LOOP_ROAD', 'drive_lane', 2.00::numeric, 2.00::numeric, 156.00::numeric, 106.00::numeric, 10),
-      ('outbound_doors_west', 'OUTBOUND_DOORS_WEST', 'dock_group', 10.00::numeric, 10.00::numeric, 40.00::numeric, 12.00::numeric, 20),
-      ('flex_doors_outbound_west', 'FLEX_DOORS_OUTBOUND_WEST', 'flex_group', 51.00::numeric, 10.00::numeric, 18.00::numeric, 10.00::numeric, 30),
-      ('flex_doors_outbound_east', 'FLEX_DOORS_OUTBOUND_EAST', 'flex_group', 71.00::numeric, 10.00::numeric, 18.00::numeric, 10.00::numeric, 40),
-      ('outbound_doors_east', 'OUTBOUND_DOORS_EAST', 'dock_group', 96.00::numeric, 10.00::numeric, 38.00::numeric, 12.00::numeric, 50),
-      ('trailer_row_north_west', 'TRAILER_ROW_NORTH_WEST', 'trailer_group', 18.00::numeric, 27.00::numeric, 50.00::numeric, 9.00::numeric, 60),
-      ('trailer_row_north_east', 'TRAILER_ROW_NORTH_EAST', 'trailer_group', 92.00::numeric, 27.00::numeric, 42.00::numeric, 9.00::numeric, 70),
+      ('outbound_doors_west', 'OUTBOUND_DOORS_WEST', 'dock_group', 10.00::numeric, 26.00::numeric, 40.00::numeric, 12.00::numeric, 20),
+      ('flex_doors_outbound_west', 'FLEX_DOORS_OUTBOUND_WEST', 'flex_group', 51.00::numeric, 28.00::numeric, 18.00::numeric, 10.00::numeric, 30),
+      ('flex_doors_outbound_east', 'FLEX_DOORS_OUTBOUND_EAST', 'flex_group', 71.00::numeric, 28.00::numeric, 18.00::numeric, 10.00::numeric, 40),
+      ('outbound_doors_east', 'OUTBOUND_DOORS_EAST', 'dock_group', 96.00::numeric, 26.00::numeric, 38.00::numeric, 12.00::numeric, 50),
+      ('trailer_row_north_west', 'TRAILER_ROW_NORTH_WEST', 'trailer_group', 18.00::numeric, 15.00::numeric, 50.00::numeric, 9.00::numeric, 60),
+      ('trailer_row_north_east', 'TRAILER_ROW_NORTH_EAST', 'trailer_group', 92.00::numeric, 15.00::numeric, 42.00::numeric, 9.00::numeric, 70),
       ('warehouse_main', 'WAREHOUSE_MAIN', 'building', 34.00::numeric, 38.00::numeric, 88.00::numeric, 22.00::numeric, 80),
       ('inbound_doors_west', 'INBOUND_DOORS_WEST', 'dock_group', 35.00::numeric, 60.00::numeric, 31.00::numeric, 8.00::numeric, 90),
       ('flex_doors_inbound_center', 'FLEX_DOORS_INBOUND_CENTER', 'flex_group', 67.00::numeric, 60.00::numeric, 26.00::numeric, 8.00::numeric, 100),

@@ -14,6 +14,16 @@ type YardBucket = {
   reserved: number
 }
 
+const WAREHOUSE_ITEM_CODE = 'warehouse_main'
+const OUTBOUND_BAND_CODES = new Set([
+  'outbound_doors_west',
+  'flex_doors_outbound_west',
+  'flex_doors_outbound_east',
+  'outbound_doors_east',
+])
+const NORTH_TRAILER_CODES = new Set(['trailer_row_north_west', 'trailer_row_north_east'])
+const YARD_BAND_GAP = 2
+
 function zoneTone(itemType: string): string {
   switch (itemType) {
     case 'building':
@@ -161,15 +171,44 @@ function compactSpotLabel(itemCode: string, spot: YardSpotRow, index: number): s
   return raw.slice(-4)
 }
 
+function positionYardItems(items: FacilityLayoutItem[]): FacilityLayoutItem[] {
+  const warehouse = items.find((item) => item.item_code === WAREHOUSE_ITEM_CODE)
+  if (!warehouse) {
+    return items
+  }
+
+  const outboundBandTop = warehouse.y - Math.max(...items.filter((item) => OUTBOUND_BAND_CODES.has(item.item_code)).map((item) => item.h), 0)
+
+  return items.map((item) => {
+    if (OUTBOUND_BAND_CODES.has(item.item_code)) {
+      return {
+        ...item,
+        y: warehouse.y - item.h,
+      }
+    }
+
+    if (NORTH_TRAILER_CODES.has(item.item_code)) {
+      return {
+        ...item,
+        y: outboundBandTop - item.h - YARD_BAND_GAP,
+      }
+    }
+
+    return item
+  })
+}
+
 export default function YardLayoutPlan({ layoutData, yardSpots }: Props) {
   if (!layoutData.layout || layoutData.items.length === 0) {
     return null
   }
 
+  const positionedItems = positionYardItems(layoutData.items)
+
   return (
     <FacilityLayoutCanvas
       layout={layoutData.layout}
-      items={layoutData.items}
+      items={positionedItems}
       title="BlueLineOps Yard Layout"
       description="Layout-driven yard plan with live occupancy overlays across dock bands, flex positions, and trailer parking rows."
       renderItem={(item) => {
