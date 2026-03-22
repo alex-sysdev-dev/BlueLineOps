@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = "https://bluelineopsok-7xwc493sb-alex-sysdev-devs-projects.vercel.app";
+const BASE = "https://bluelineopsok.vercel.app";
 
 const tools = [
   {
