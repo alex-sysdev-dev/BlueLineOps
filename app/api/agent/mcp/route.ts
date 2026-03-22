@@ -108,3 +108,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ error: "Unknown method" }, { status: 400 });
 }
+
+export async function GET() {
+  return NextResponse.json({ tools });
+}
