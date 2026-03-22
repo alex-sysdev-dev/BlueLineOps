@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://bluelineopsok-d06hvfgdm-alex-sysdev-devs-projects.vercel.app";
+const BASE = "https://bluelineopsok-7xwc493sb-alex-sysdev-devs-projects.vercel.app";
 
 const tools = [
   {
@@ -83,12 +83,53 @@ async function callTool(name: string, args: Record<string, unknown>) {
   return res.json();
 }
 
+function sseMessage(data: unknown) {
+  return `data: ${JSON.stringify(data)}\n\n`;
+}
+
+export async function GET(req: NextRequest) {
+  const encoder = new TextEncoder();
+  
+  const stream = new ReadableStream({
+    start(controller) {
+      // Send endpoint event
+      controller.enqueue(encoder.encode(
+        `event: endpoint\ndata: ${JSON.stringify({ uri: "/api/agent/mcp" })}\n\n`
+      ));
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { method, params } = body;
+  const { method, params, id } = body;
+
+  if (method === "initialize") {
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: {
+        protocolVersion: "2024-11-05",
+        capabilities: { tools: {} },
+        serverInfo: { name: "bluelineops", version: "1.0.0" },
+      },
+    });
+  }
 
   if (method === "tools/list") {
-    return NextResponse.json({ tools });
+    return NextResponse.json({
+      jsonrpc: "2.0",
+      id,
+      result: { tools },
+    });
   }
 
   if (method === "tools/call") {
@@ -96,19 +137,24 @@ export async function POST(req: NextRequest) {
     try {
       const result = await callTool(name, args || {});
       return NextResponse.json({
-        content: [{ type: "text", text: JSON.stringify(result) }],
+        jsonrpc: "2.0",
+        id,
+        result: {
+          content: [{ type: "text", text: JSON.stringify(result) }],
+        },
       });
     } catch (err) {
       return NextResponse.json({
-        content: [{ type: "text", text: `Error: ${err}` }],
-        isError: true,
+        jsonrpc: "2.0",
+        id,
+        error: { code: -32000, message: String(err) },
       });
     }
   }
 
-  return NextResponse.json({ error: "Unknown method" }, { status: 400 });
-}
-
-export async function GET() {
-  return NextResponse.json({ tools });
+  return NextResponse.json({
+    jsonrpc: "2.0",
+    id,
+    error: { code: -32601, message: "Method not found" },
+  });
 }
