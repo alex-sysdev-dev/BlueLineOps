@@ -10,8 +10,8 @@ export default function LandingPage() {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-6 py-14">
         <div className="grid items-center gap-10 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="text-center xl:text-left">
-            <div className="flex flex-col items-center gap-6 xl:items-start">
+          <div className="text-center">
+            <div className="flex flex-col items-center gap-6">
               <Image
                 src="/login.svg"
                 alt="BlueLineOps Logo"
@@ -25,14 +25,14 @@ export default function LandingPage() {
               </h1>
             </div>
 
-            <p className="mt-6 max-w-xl text-xl font-light text-zinc-300 md:text-2xl xl:max-w-2xl">
+            <p className="mx-auto mt-6 max-w-xl text-xl font-light text-zinc-300 md:text-2xl xl:max-w-2xl">
               Operational Intelligence for Logistics
             </p>
-            <p className="mt-4 max-w-xl text-base text-zinc-400 xl:max-w-2xl">
-              Live executive control across backlog, labor, inbound flow, outbound execution, and yard traffic.
+            <p className="mx-auto mt-4 max-w-xl text-base text-zinc-400 xl:max-w-2xl">
+              Live Agent Coming soon 
             </p>
 
-            <div className="mt-12 w-full max-w-md">
+            <div className="mx-auto mt-12 w-full max-w-md">
               <LandingKpiTile
                 href="/dashboard"
                 title="Enterprise Login"
@@ -43,37 +43,37 @@ export default function LandingPage() {
 
           <div className="w-full">
             <SignalPulseBoard
-              title="Live Operating Signals"
-              description="The public entry now shows the same control-tower behavior visitors will experience throughout the platform."
-              summary="BlueLineOps presents logistics as a live system: orders building, labor responding, facilities loading, and CPT risk moving in real time."
+              title="Live Updates"
+              description="Live Operating KPIs"
+              summary="BlueLineOps Operational Intelligence built for Logistics, e-commerce, and 3PL teams."
               signals={[
                 {
-                  label: "Order Pressure",
+                  label: "Order Volume",
                   color: "#38bdf8",
                   level: 72,
                   displayValue: "375",
-                  note: "Open order volume currently shaping the floor and shipping picture.",
+                  note: "Open order volume",
                 },
                 {
-                  label: "Labor Flow",
+                  label: "Acitve Labor",
                   color: "#34d399",
                   level: 66,
                   displayValue: "24",
-                  note: "Active labor coverage responding to the current execution wave.",
+                  note: "Track Lobor across the site."
                 },
                 {
-                  label: "CPT Exposure",
+                  label: "CPT Risk",
                   color: "#fb7185",
                   level: 34,
                   displayValue: "6",
-                  note: "Orders pressing against shipping windows and exception risk.",
+                  note: "Evaluate your CPT Window.",
                 },
                 {
-                  label: "Facility Load",
+                  label: "YMS",
                   color: "#f59e0b",
                   level: 58,
                   displayValue: "43%",
-                  note: "Dock and yard utilization currently driving site capacity posture.",
+                  note: "Dock and yard utilization.",
                 },
               ]}
             />
