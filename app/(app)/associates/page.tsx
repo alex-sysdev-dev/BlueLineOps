@@ -1,4 +1,5 @@
 import BarChart from '@/components/charts/BarChart'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import KpiTile from '@/components/kpi/KpiTile'
 import { getAssociateCurrentPerformance, getAssociateSkillMatrix } from '@/lib/queries/associates'
 import type { AssociatePerformanceRow, AssociateSkillEntry, AssociateSkillMatrixRow } from '@/types/associates'
@@ -80,6 +81,10 @@ function atRiskPerformers(rows: AssociatePerformanceRow[]): AssociatePerformance
     .slice(0, 8)
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default async function AssociatesPage() {
   const [matrixRows, performanceRows] = await Promise.all([
     getAssociateSkillMatrix(),
@@ -89,6 +94,10 @@ export default async function AssociatesPage() {
   const workforce = summarizeWorkforce(matrixRows, performanceRows)
   const topRows = topPerformers(performanceRows)
   const riskRows = atRiskPerformers(performanceRows)
+  const trackedRate = workforce.totalAssociates > 0 ? Number(((workforce.trackedAssociates / workforce.totalAssociates) * 100).toFixed(1)) : 0
+  const riskRate = workforce.trackedAssociates > 0 ? Number(((workforce.belowTarget / workforce.trackedAssociates) * 100).toFixed(1)) : 0
+  const strengthRate = workforce.trackedAssociates > 0 ? Number(((workforce.aboveTarget / workforce.trackedAssociates) * 100).toFixed(1)) : 0
+  const coverageRate = workforce.totalAssociates > 0 ? Number((((workforce.forkliftCertified + workforce.clampCertified) / (workforce.totalAssociates * 2)) * 100).toFixed(1)) : 0
 
   const topLabels = topRows.map((row) => row.full_name.split(' ')[0])
   const topSeries = [
@@ -131,6 +140,42 @@ export default async function AssociatesPage() {
         <KpiTile title="Forklift Cert" value={workforce.forkliftCertified} accent="text-blue-100 group-hover:text-blue-50" />
         <KpiTile title="Clamp Cert" value={workforce.clampCertified} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
+
+      <SignalPulseBoard
+        title="Workforce Readiness Pulse"
+        description="Continuous view of labor coverage, tracked output, below-target risk, and top-end productivity strength across the current workforce."
+        summary="This keeps the associates page feeling like an active labor-control surface instead of a static HR report."
+        signals={[
+          {
+            label: 'Tracked Output',
+            color: '#38bdf8',
+            level: trackedRate,
+            displayValue: `${workforce.trackedAssociates}`,
+            note: 'Associates with current-day tracked performance events.',
+          },
+          {
+            label: 'Risk Exposure',
+            color: '#fb7185',
+            level: clamp(riskRate, 8, 96),
+            displayValue: `${workforce.belowTarget}`,
+            note: 'Associates currently below or at risk versus UPH target.',
+          },
+          {
+            label: 'Top-End Strength',
+            color: '#34d399',
+            level: clamp(strengthRate, 8, 96),
+            displayValue: `${workforce.aboveTarget}`,
+            note: 'Associates running above target on today’s tracked work.',
+          },
+          {
+            label: 'Cert Coverage',
+            color: '#f59e0b',
+            level: clamp(coverageRate, 8, 96),
+            displayValue: `${coverageRate.toFixed(1)}%`,
+            note: 'Combined forklift and clamp certification depth across the workforce.',
+          },
+        ]}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_1fr] gap-6">
         <div className="space-y-6">

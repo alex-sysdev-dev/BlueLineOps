@@ -1,4 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
 import DataTable, { type Column } from '@/components/tables/DataTable'
@@ -6,6 +7,10 @@ import { buildInspectorBreakdown, buildQaTrend, calculateQaKpis } from '@/lib/ca
 import { getQaInspections } from '@/lib/queries/qa'
 import { getCrossFunctionalKpis, getCycleCountTasksCount } from '@/lib/queries/operations'
 import type { QaInspection } from '@/types/qa'
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
 
 export default async function QaPage() {
   const [inspections, crossKpis, cycleCount] = await Promise.all([
@@ -16,6 +21,8 @@ export default async function QaPage() {
   const kpis = calculateQaKpis(inspections)
   const trend = buildQaTrend(inspections, 14)
   const inspectorBreakdown = buildInspectorBreakdown(inspections, 8)
+  const failRate = kpis.totalInspections > 0 ? Number(((kpis.failed / kpis.totalInspections) * 100).toFixed(1)) : 0
+  const queueRate = kpis.totalInspections > 0 ? Number((((crossKpis.inboundQaPending + crossKpis.inboundQaBlocked) / Math.max(kpis.totalInspections, 1)) * 100).toFixed(1)) : 0
 
   const columns: Column<QaInspection>[] = [
     { header: 'Inspector', accessor: 'inspector' },
@@ -42,6 +49,42 @@ export default async function QaPage() {
         <KpiTile title="Inbound QA Pending" value={crossKpis.inboundQaPending} accent="text-yellow-100 group-hover:text-yellow-50" />
         <KpiTile title="CycleCount" value={cycleCount} accent="text-blue-100 group-hover:text-blue-50" />
       </div>
+
+      <SignalPulseBoard
+        title="Quality Control Pulse"
+        description="Rolling live view of inspection volume, pass confidence, failure exposure, and inbound QA queue pressure."
+        summary="The QA page now reads like an active control room by showing quality pressure as a live signal, not just a historical chart."
+        signals={[
+          {
+            label: 'Inspection Load',
+            color: '#38bdf8',
+            level: clamp(kpis.totalInspections * 5, 8, 96),
+            displayValue: `${kpis.totalInspections}`,
+            note: 'Inspection events currently driving QA activity.',
+          },
+          {
+            label: 'Pass Confidence',
+            color: '#34d399',
+            level: clamp(kpis.passRate, 8, 96),
+            displayValue: `${kpis.passRate.toFixed(1)}%`,
+            note: 'Pass rate across the current inspection set.',
+          },
+          {
+            label: 'Failure Exposure',
+            color: '#fb7185',
+            level: clamp(failRate, 8, 96),
+            displayValue: `${kpis.failed}`,
+            note: 'Failed inspections requiring containment or follow-up.',
+          },
+          {
+            label: 'Queue Pressure',
+            color: '#f59e0b',
+            level: clamp(queueRate || (crossKpis.inboundQaPending + crossKpis.inboundQaBlocked) * 6, 8, 96),
+            displayValue: `${crossKpis.inboundQaPending + crossKpis.inboundQaBlocked}`,
+            note: 'Inbound items still waiting on QA disposition or blocked release.',
+          },
+        ]}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <LineCharts
