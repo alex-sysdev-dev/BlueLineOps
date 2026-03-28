@@ -1,7 +1,7 @@
-import LineCharts from '@/components/charts/LineCharts'
+import OperationalPulsePanel, { type OperationalPulsePoint } from '@/components/dashboard/OperationalPulsePanel'
 import KpiTile from '@/components/kpi/KpiTile'
-import { getExecutiveCptRiskOrders, getExecutiveKpiMaxLines, getExecutiveKpiSnapshot } from '@/lib/queries/executive'
-import type { ExecutiveCptRiskOrder, ExecutiveKpiSnapshot } from '@/types/executive'
+import { getExecutiveCptRiskOrders, getExecutiveKpiHistoryHourly, getExecutiveKpiSnapshot } from '@/lib/queries/executive'
+import type { ExecutiveCptRiskOrder, ExecutiveKpiHistoryRow, ExecutiveKpiSnapshot } from '@/types/executive'
 
 function formatTimestamp(value: string | null | undefined): string {
   if (!value) {
@@ -16,18 +16,6 @@ function formatTimestamp(value: string | null | undefined): string {
   return parsed.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
-function formatTrendLabel(value: string): string {
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) {
-    return value
-  }
-
-  return parsed.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
   })
@@ -68,6 +56,131 @@ function formatMinutesToCpt(value: number | null | undefined): string {
   }
 
   return `${value}m left`
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+function normalizeSignal(values: Array<number | null | undefined>, fallback: number): number[] {
+  const clean = values.map((value) => (value === null || value === undefined || Number.isNaN(value) ? fallback : value))
+
+  if (clean.length === 0) {
+    return []
+  }
+
+  const min = Math.min(...clean)
+  const max = Math.max(...clean)
+
+  if (Math.abs(max - min) < 0.001) {
+    const midpoint = clamp(42 + clean[clean.length - 1] * 0.08, 34, 72)
+    return clean.map(() => midpoint)
+  }
+
+  return clean.map((value) => clamp(14 + ((value - min) / (max - min)) * 78, 8, 96))
+}
+
+function signalRange(values: number[]): number {
+  if (values.length === 0) {
+    return 0
+  }
+
+  return Math.max(...values) - Math.min(...values)
+}
+
+function buildPulseBase(snapshot: ExecutiveKpiSnapshot | null): OperationalPulsePoint {
+  const throughput = snapshot?.throughput_per_hour ?? 22
+  const productivity = snapshot?.productivity_per_labor_hour ?? 0.92
+  const activeOrders = snapshot?.active_orders ?? 118
+  const cptRisk = snapshot?.cpt_risk_orders ?? 6
+  const yard = snapshot?.yard_occupancy_pct ?? 78
+  const dock = snapshot?.dock_utilization_pct ?? 64
+
+  return {
+    backlog: clamp(26 + activeOrders * 0.15, 22, 84),
+    cpt: clamp(18 + cptRisk * 8, 12, 88),
+    flow: clamp(28 + throughput * 1.6 + productivity * 12, 24, 92),
+    capacity: clamp((yard + dock) / 2, 18, 92),
+  }
+}
+
+function buildSimulatedPulseSeed(base: OperationalPulsePoint, length = 24): OperationalPulsePoint[] {
+  return Array.from({ length }, (_, index) => ({
+    backlog: clamp(base.backlog + Math.sin(index / 2.2) * 9 + Math.cos(index / 5.1) * 4, 10, 96),
+    cpt: clamp(base.cpt + Math.sin((index + 2) / 3) * 7 + Math.cos(index / 4.7) * 3, 8, 94),
+    flow: clamp(base.flow + Math.sin((index + 1) / 2.7) * 8 - Math.cos(index / 4.2) * 4, 12, 96),
+    capacity: clamp(base.capacity + Math.sin((index + 3) / 3.3) * 6 + Math.cos(index / 6.1) * 5, 10, 94),
+  }))
+}
+
+function buildOperationalPulse(
+  snapshot: ExecutiveKpiSnapshot | null,
+  hourlyHistory: ExecutiveKpiHistoryRow[]
+): { seed: OperationalPulsePoint[]; modeLabel: string; modeSummary: string } {
+  const base = buildPulseBase(snapshot)
+
+  if (hourlyHistory.length === 0) {
+    return {
+      seed: buildSimulatedPulseSeed(base),
+      modeLabel: 'Deterministic Demo Pulse',
+      modeSummary:
+        'No hourly executive history was returned from Supabase, so this panel is running a deterministic control-tower pulse from the current KPI baseline.',
+    }
+  }
+
+  const backlog = normalizeSignal(
+    hourlyHistory.map((row) => row.active_orders_max ?? row.pending_pick_orders_max ?? row.active_orders_avg),
+    snapshot?.active_orders ?? 118
+  )
+  const cpt = normalizeSignal(
+    hourlyHistory.map((row) => row.cpt_risk_orders_max ?? row.cpt_risk_orders_avg),
+    snapshot?.cpt_risk_orders ?? 6
+  )
+  const flow = normalizeSignal(
+    hourlyHistory.map((row) => {
+      const throughput = row.throughput_per_hour_avg ?? snapshot?.throughput_per_hour ?? 22
+      const productivity = row.productivity_per_labor_hour_avg ?? snapshot?.productivity_per_labor_hour ?? 0.92
+      return throughput * 3 + productivity * 28
+    }),
+    (snapshot?.throughput_per_hour ?? 22) * 3 + (snapshot?.productivity_per_labor_hour ?? 0.92) * 28
+  )
+  const capacity = normalizeSignal(
+    hourlyHistory.map((row) => {
+      const yard = row.yard_occupancy_pct_avg ?? snapshot?.yard_occupancy_pct ?? 78
+      const dock = row.dock_utilization_pct_avg ?? snapshot?.dock_utilization_pct ?? 64
+      return (yard + dock) / 2
+    }),
+    ((snapshot?.yard_occupancy_pct ?? 78) + (snapshot?.dock_utilization_pct ?? 64)) / 2
+  )
+
+  const seed = backlog.map((backlogValue, index) => ({
+    backlog: backlogValue,
+    cpt: cpt[index] ?? cpt[cpt.length - 1] ?? base.cpt,
+    flow: flow[index] ?? flow[flow.length - 1] ?? base.flow,
+    capacity: capacity[index] ?? capacity[capacity.length - 1] ?? base.capacity,
+  }))
+
+  const flattened =
+    signalRange(backlog) < 10 &&
+    signalRange(cpt) < 10 &&
+    signalRange(flow) < 10 &&
+    signalRange(capacity) < 10
+
+  if (flattened) {
+    return {
+      seed: buildSimulatedPulseSeed(seed[seed.length - 1] ?? base),
+      modeLabel: 'History-Assisted Pulse',
+      modeSummary:
+        'The stored hourly rollups are nearly flat right now, so this panel is amplifying the real baseline with a deterministic pulse that shows backlog, CPT pressure, labor flow, and capacity behavior.',
+    }
+  }
+
+  return {
+    seed,
+    modeLabel: 'History-Seeded Pulse',
+    modeSummary:
+      'This pulse is seeded from the latest hourly executive rollups and continues moving between refreshes so visitors can understand the operating rhythm instead of staring at a static line.',
+  }
 }
 
 function riskTone(bucket: string | null | undefined, isDeadlined: boolean | null | undefined): string {
@@ -130,9 +243,9 @@ function buildWatchlistHeading(riskOrders: ExecutiveCptRiskOrder[]): string {
 }
 
 export default async function ExecutiveControlCenter() {
-  const [snapshot, maxLines, riskOrders] = await Promise.all([
+  const [snapshot, hourlyHistory, riskOrders] = await Promise.all([
     getExecutiveKpiSnapshot(),
-    getExecutiveKpiMaxLines(24),
+    getExecutiveKpiHistoryHourly(24),
     getExecutiveCptRiskOrders(8),
   ])
 
@@ -155,17 +268,8 @@ export default async function ExecutiveControlCenter() {
     { title: 'Safety', value: formatNumber(snapshot?.safety_incidents_30d), accent: 'text-amber-100 group-hover:text-amber-50' },
   ]
 
-  const maxLineLabels = maxLines.map((row) => formatTrendLabel(row.bucket_at))
-  const maxLineSeries =
-    maxLines.length === 0
-      ? []
-      : [
-          { name: 'Active Orders', color: '#38bdf8', values: maxLines.map((row) => row.active_orders_max ?? 0) },
-          { name: 'CPT Risk', color: '#fb7185', values: maxLines.map((row) => row.cpt_risk_orders_max ?? 0) },
-          { name: 'Safety (30d)', color: '#f59e0b', values: maxLines.map((row) => row.safety_incidents_30d_max ?? 0) },
-        ]
-
   const operationalBrief = buildOperationalBrief(snapshot)
+  const operationalPulse = buildOperationalPulse(snapshot, hourlyHistory)
 
   return (
     <div className="space-y-8">
@@ -193,11 +297,12 @@ export default async function ExecutiveControlCenter() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.8fr_1fr] gap-6">
-        <LineCharts
-          title="Operational Pressure Max Lines"
-          description="Hourly max-line trend from the Supabase history rollups for active orders, CPT risk, and safety incidents."
-          labels={maxLineLabels}
-          series={maxLineSeries}
+        <OperationalPulsePanel
+          title="Operational Pulse"
+          description="A rolling control-tower signal for the four conversations visitors should immediately understand: order pressure, CPT exposure, labor flow, and facility capacity."
+          seed={operationalPulse.seed}
+          modeLabel={operationalPulse.modeLabel}
+          modeSummary={operationalPulse.modeSummary}
         />
 
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">

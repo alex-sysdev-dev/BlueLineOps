@@ -83,11 +83,7 @@ async function callTool(name: string, args: Record<string, unknown>) {
   return res.json();
 }
 
-function sseMessage(data: unknown) {
-  return `data: ${JSON.stringify(data)}\n\n`;
-}
-
-export async function GET(req: NextRequest) {
+export async function GET() {
   const encoder = new TextEncoder();
   
   const stream = new ReadableStream({

@@ -1,4 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import PickPackFloorPlan from '@/components/outbound/PickPackFloorPlan'
 import PickPackMap from '@/components/floor/PickPackMap'
 import {
@@ -38,6 +39,10 @@ function capLabel(value: string): string {
     .join(' ')
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default async function PickPackFloorView() {
   const [data, layoutData] = await Promise.all([
     getOutboundFloorData(),
@@ -47,6 +52,9 @@ export default async function PickPackFloorView() {
   const throughputUph = calculateThroughputUph(data.tasks)
   const heatCells = buildStationHeatmap(data.stations, data.tasks)
   const pickStations = buildPickStationBoard(data.tasks, 20)
+  const lateRate = floorKpis.openTasks > 0 ? Number(((floorKpis.lateTasks / floorKpis.openTasks) * 100).toFixed(1)) : 0
+  const backlogRate = clamp(floorKpis.openTasks * 4, 8, 96)
+  const throughputRate = clamp(throughputUph * 2, 10, 96)
 
   return (
     <div className="space-y-8">
@@ -65,6 +73,42 @@ export default async function PickPackFloorView() {
         <KpiTile title="Active Stations" value={floorKpis.activeStations} accent="text-emerald-100 group-hover:text-emerald-50" />
         <KpiTile title="Avg. Utilization" value={floorKpis.avgUtilization} suffix="%" accent="text-blue-100 group-hover:text-blue-50" />
       </div>
+
+      <SignalPulseBoard
+        title="Floor Execution Pulse"
+        description="Continuous live view of throughput, backlog, station engagement, and lateness pressure across the pick and pack floor."
+        summary="This pulse keeps the floor page visibly active while the map stays readable and spatially stable."
+        signals={[
+          {
+            label: 'Throughput',
+            color: '#38bdf8',
+            level: throughputRate,
+            displayValue: `${throughputUph}`,
+            note: 'Recent completed-unit flow translated into hourly pace.',
+          },
+          {
+            label: 'Backlog Load',
+            color: '#f59e0b',
+            level: backlogRate,
+            displayValue: `${floorKpis.openTasks}`,
+            note: 'Open pick work currently queued or in progress on the floor.',
+          },
+          {
+            label: 'Station Utilization',
+            color: '#34d399',
+            level: floorKpis.avgUtilization,
+            displayValue: `${floorKpis.avgUtilization.toFixed(1)}%`,
+            note: 'Average running utilization across pack stations.',
+          },
+          {
+            label: 'Late Pressure',
+            color: '#fb7185',
+            level: lateRate,
+            displayValue: `${floorKpis.lateTasks}`,
+            note: 'Late-task pressure relative to the current open task pool.',
+          },
+        ]}
+      />
 
       {layoutData.layout && layoutData.items.length > 0 ? (
         <PickPackFloorPlan layoutData={layoutData} data={data} />

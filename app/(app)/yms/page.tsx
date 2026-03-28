@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import KpiTile from '@/components/kpi/KpiTile'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
@@ -14,13 +15,20 @@ function isClosedOrder(status: string | null | undefined): boolean {
   return CLOSED_ORDER_TOKENS.some((token) => value.includes(token))
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default async function YmsOverviewPage() {
   const { yardSpots: yardSpotRows, warehouses, trailers, orders } = await getYmsDashboardData()
   const yardSpots = normalizeYardSpots(yardSpotRows)
   const summary = summarizeYard(yardSpots)
   const occupancyRate = summary.total > 0 ? Number(((summary.occupied / summary.total) * 100).toFixed(1)) : 0
+  const availabilityRate = summary.total > 0 ? Number(((summary.available / summary.total) * 100).toFixed(1)) : 0
   const openOrders = orders.filter((order) => !isClosedOrder(order.status)).length
   const trailersInYard = trailers.filter((trailer) => Boolean(trailer.current_spot_id)).length
+  const pressureRate = clamp(openOrders * 6, 8, 96)
+  const reservationRate = summary.total > 0 ? Number((((summary.reserved + summary.blocked + summary.maintenance) / summary.total) * 100).toFixed(1)) : 0
 
   const zoneCounts = Array.from(
     yardSpots.reduce((map, spot) => {
@@ -60,6 +68,42 @@ export default async function YmsOverviewPage() {
         <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
 
+      <SignalPulseBoard
+        title="Yard Traffic Pulse"
+        description="Continuous motion view of how spot occupancy, availability, trailer presence, and order pressure are interacting across the yard."
+        summary="This live layer keeps the YMS page active between data refreshes so visitors see a traffic system, not a static yard inventory."
+        signals={[
+          {
+            label: 'Occupancy Load',
+            color: '#38bdf8',
+            level: occupancyRate,
+            displayValue: `${occupancyRate.toFixed(1)}%`,
+            note: 'Occupied yard footprint relative to total spot capacity.',
+          },
+          {
+            label: 'Available Buffer',
+            color: '#34d399',
+            level: availabilityRate,
+            displayValue: `${availabilityRate.toFixed(1)}%`,
+            note: 'Remaining space available for inbound, outbound, and flex positioning.',
+          },
+          {
+            label: 'Trailer Presence',
+            color: '#f59e0b',
+            level: summary.total > 0 ? Number(((trailersInYard / summary.total) * 100).toFixed(1)) : 0,
+            displayValue: `${trailersInYard}`,
+            note: 'Trailers currently sitting in assigned yard spots.',
+          },
+          {
+            label: 'Order Pressure',
+            color: '#fb7185',
+            level: pressureRate,
+            displayValue: `${openOrders}`,
+            note: 'Open order demand currently leaning on yard and dock activity.',
+          },
+        ]}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Spot Status Snapshot</h2>
@@ -79,6 +123,10 @@ export default async function YmsOverviewPage() {
             <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/40 p-3">
               <div className="text-zinc-400">Unknown</div>
               <div className="text-zinc-100 text-lg font-semibold">{summary.unknown}</div>
+            </div>
+            <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/40 p-3 sm:col-span-2">
+              <div className="text-zinc-400">Reserved / Blocked Pressure</div>
+              <div className="text-zinc-100 text-lg font-semibold">{reservationRate.toFixed(1)}%</div>
             </div>
           </div>
         </section>

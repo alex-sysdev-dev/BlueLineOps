@@ -38,6 +38,18 @@ function toDayLabel(key: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function buildDayWindow(days: number, latestKey: string | null): string[] {
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const anchorKey = latestKey && latestKey > todayKey ? latestKey : latestKey ?? todayKey
+  const anchorDate = new Date(`${anchorKey}T00:00:00`)
+
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(anchorDate)
+    date.setDate(anchorDate.getDate() - (days - 1 - index))
+    return date.toISOString().slice(0, 10)
+  })
+}
+
 function computeLayout(rows: Array<Pick<PackStation, 'row' | 'column'>>): {
   fallbackColumns: number
 } {
@@ -167,7 +179,8 @@ export function buildTaskFlowTrend(tasks: PickTask[], days = 10): {
     byDay.set(dayKey, bucket)
   }
 
-  const keys = Array.from(byDay.keys()).sort((a, b) => a.localeCompare(b)).slice(-days)
+  const latestKey = Array.from(byDay.keys()).sort((a, b) => a.localeCompare(b)).slice(-1)[0] ?? null
+  const keys = buildDayWindow(days, latestKey)
 
   return {
     labels: keys.map(toDayLabel),

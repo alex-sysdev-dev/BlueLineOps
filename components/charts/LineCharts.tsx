@@ -1,3 +1,7 @@
+"use client"
+
+import { startTransition, useEffect, useRef, useState } from 'react'
+
 type LineSeries = {
   name: string
   color: string
@@ -20,7 +24,53 @@ function formatTick(value: number, suffix?: string): string {
   return `${value.toFixed(0)}${suffix ?? ''}`
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default function LineCharts({ title, labels, series, description, ySuffix }: LineChartsProps) {
+  const seedSeries = series.map((line) => ({
+    ...line,
+    values: line.values.length > 0 ? line.values : labels.map(() => 0),
+  }))
+  const [animatedSeries, setAnimatedSeries] = useState(seedSeries)
+  const anchorRef = useRef(seedSeries)
+  const tickRef = useRef(0)
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      startTransition(() => {
+        setAnimatedSeries((current) =>
+          current.map((line, lineIndex) => {
+            const anchorValues = anchorRef.current[lineIndex]?.values ?? line.values
+            const anchorMin = Math.min(...anchorValues, 0)
+            const anchorMax = Math.max(...anchorValues, 1)
+            const anchorRange = Math.max(anchorMax - anchorMin, 1)
+
+            return {
+              ...line,
+              values: line.values.map((value, valueIndex) => {
+                const anchor = anchorValues[valueIndex] ?? 0
+                const left = line.values[valueIndex - 1] ?? value
+                const right = line.values[valueIndex + 1] ?? value
+                const centerPull = (((left + right) / 2) - value) * 0.08
+                const anchorPull = (anchor - value) * 0.16
+                const wave = Math.sin((tickRef.current + valueIndex * 0.9 + lineIndex * 1.7) / 2.4) * Math.max(anchorRange * 0.035, Math.abs(anchor) * 0.025, 0.24)
+                const lower = Math.max(0, anchor - Math.max(anchorRange * 0.12, Math.abs(anchor) * 0.08, 0.8))
+                const upper = anchor + Math.max(anchorRange * 0.12, Math.abs(anchor) * 0.08, 0.8)
+
+                return Number(clamp(value + centerPull + anchorPull + wave, lower, upper).toFixed(2))
+              }),
+            }
+          })
+        )
+        tickRef.current += 1
+      })
+    }, 2400)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   if (labels.length === 0 || series.length === 0) {
     return (
       <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
@@ -36,7 +86,7 @@ export default function LineCharts({ title, labels, series, description, ySuffix
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
 
-  const allValues = series.flatMap((line) => line.values)
+  const allValues = animatedSeries.flatMap((line) => line.values)
   const minValue = Math.min(...allValues, 0)
   const maxValue = Math.max(...allValues, 1)
   const range = maxValue - minValue || 1
@@ -89,12 +139,12 @@ export default function LineCharts({ title, labels, series, description, ySuffix
           )
         })}
 
-        {series.map((line) => {
+        {animatedSeries.map((line) => {
           const points = line.values.map((value, index) => `${toX(index)},${toY(value)}`).join(' ')
           return <polyline key={line.name} fill="none" stroke={line.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={points} />
         })}
 
-        {series.map((line) =>
+        {animatedSeries.map((line) =>
           line.values.map((value, index) => (
             <circle key={`${line.name}-${index}`} cx={toX(index)} cy={toY(value)} r="3.2" fill={line.color} stroke="rgba(2,6,23,0.95)" strokeWidth="1.2" />
           ))
@@ -102,7 +152,7 @@ export default function LineCharts({ title, labels, series, description, ySuffix
       </svg>
 
       <div className="mt-3 flex flex-wrap gap-4 text-sm">
-        {series.map((line) => (
+        {animatedSeries.map((line) => (
           <div key={line.name} className="flex items-center gap-2 text-zinc-300">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: line.color }} />
             <span>{line.name}</span>

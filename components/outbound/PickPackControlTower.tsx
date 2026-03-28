@@ -1,4 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
 import { buildStationWorkload, buildTaskFlowTrend, calculateOutboundFloorKpis } from '@/lib/calculations/outbound'
@@ -78,6 +79,10 @@ function queueStateBadge(state: InboundQueueState): string {
   return 'bg-zinc-500/20 text-zinc-300 border-zinc-500/40'
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default async function PickPackControlTower() {
   const [data, crossKpis, dockDoors] = await Promise.all([
     getOutboundFloorData(),
@@ -88,6 +93,9 @@ export default async function PickPackControlTower() {
   const kpis = calculateOutboundFloorKpis(data)
   const taskTrend = buildTaskFlowTrend(data.tasks, 12)
   const stationWorkload = buildStationWorkload(data.stations, 10)
+  const throughputRate = clamp((kpis.unitsRemaining > 0 ? (kpis.activeStations / Math.max(kpis.unitsRemaining, 1)) * 180 : 20), 8, 96)
+  const backlogRate = clamp(kpis.openTasks * 4, 8, 96)
+  const lateRate = kpis.openTasks > 0 ? Number(((kpis.lateTasks / kpis.openTasks) * 100).toFixed(1)) : 0
 
   return (
     <div className="space-y-8">
@@ -110,6 +118,42 @@ export default async function PickPackControlTower() {
         <KpiTile title="Inventory Risk SKUs" value={crossKpis.inventoryRiskSkus} accent="text-orange-100 group-hover:text-orange-50" />
         <KpiTile title="Outbound Dock Doors" value={dockDoors.outboundDockDoors} accent="text-blue-100 group-hover:text-blue-50" />
       </div>
+
+      <SignalPulseBoard
+        title="Outbound Execution Pulse"
+        description="Continuous motion layer for task backlog, lateness, station utilization, and release flow across outbound execution."
+        summary="The control tower now stays active even when historical task events are sparse, so visitors see operational movement instead of a frozen board."
+        signals={[
+          {
+            label: 'Backlog Load',
+            color: '#38bdf8',
+            level: backlogRate,
+            displayValue: `${kpis.openTasks}`,
+            note: 'Open pick work still sitting in the pipeline.',
+          },
+          {
+            label: 'Late Pressure',
+            color: '#fb7185',
+            level: lateRate,
+            displayValue: `${kpis.lateTasks}`,
+            note: 'Tasks slipping behind due time inside the current open backlog.',
+          },
+          {
+            label: 'Station Engagement',
+            color: '#34d399',
+            level: kpis.avgUtilization,
+            displayValue: `${kpis.avgUtilization.toFixed(1)}%`,
+            note: 'Average utilization across the running pack stations.',
+          },
+          {
+            label: 'Release Flow',
+            color: '#f59e0b',
+            level: throughputRate,
+            displayValue: `${kpis.unitsRemaining}`,
+            note: 'Remaining unit volume still moving through release and execution.',
+          },
+        ]}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <LineCharts

@@ -1,3 +1,7 @@
+"use client"
+
+import { startTransition, useEffect, useRef, useState } from 'react'
+
 type BarSeries = {
   name: string
   color: string
@@ -19,7 +23,44 @@ function formatValue(value: number): string {
   return `${value.toFixed(0)}`
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default function BarChart({ title, labels, series, description }: BarChartProps) {
+  const seedSeries = series.map((entry) => ({
+    ...entry,
+    values: entry.values.length > 0 ? entry.values : labels.map(() => 0),
+  }))
+  const [animatedSeries, setAnimatedSeries] = useState(seedSeries)
+  const anchorRef = useRef(seedSeries)
+  const tickRef = useRef(0)
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      startTransition(() => {
+        setAnimatedSeries((current) =>
+          current.map((entry, seriesIndex) => ({
+            ...entry,
+            values: entry.values.map((value, valueIndex) => {
+              const anchor = anchorRef.current[seriesIndex]?.values[valueIndex] ?? 0
+              const baseAmplitude = Math.max(Math.abs(anchor) * 0.04, 0.6)
+              const wave = Math.sin((tickRef.current + valueIndex * 0.8 + seriesIndex * 1.9) / 2.3) * baseAmplitude
+              const anchorPull = (anchor - value) * 0.18
+              const lower = Math.max(0, anchor - Math.max(Math.abs(anchor) * 0.1, 0.8))
+              const upper = anchor + Math.max(Math.abs(anchor) * 0.1, 0.8)
+
+              return Number(clamp(value + anchorPull + wave, lower, upper).toFixed(2))
+            }),
+          }))
+        )
+        tickRef.current += 1
+      })
+    }, 2500)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   if (labels.length === 0 || series.length === 0) {
     return (
       <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
@@ -35,11 +76,11 @@ export default function BarChart({ title, labels, series, description }: BarChar
   const plotWidth = width - padding.left - padding.right
   const plotHeight = height - padding.top - padding.bottom
 
-  const maxValue = Math.max(...series.flatMap((entry) => entry.values), 1)
+  const maxValue = Math.max(...animatedSeries.flatMap((entry) => entry.values), 1)
   const safeMax = maxValue === 0 ? 1 : maxValue
   const groupWidth = plotWidth / labels.length
   const totalBarGap = 10
-  const barCount = series.length
+  const barCount = animatedSeries.length
   const barWidth = Math.max(8, (groupWidth - totalBarGap) / barCount)
   const xTickStep = Math.max(1, Math.ceil(labels.length / 8))
 
@@ -82,7 +123,7 @@ export default function BarChart({ title, labels, series, description }: BarChar
         {labels.map((label, labelIndex) => {
           const groupLeft = padding.left + labelIndex * groupWidth + (groupWidth - barCount * barWidth) / 2
 
-          return series.map((entry, seriesIndex) => {
+          return animatedSeries.map((entry, seriesIndex) => {
             const value = entry.values[labelIndex] ?? 0
             const barHeight = (value / safeMax) * plotHeight
             const x = groupLeft + seriesIndex * barWidth
@@ -98,7 +139,7 @@ export default function BarChart({ title, labels, series, description }: BarChar
       </svg>
 
       <div className="mt-3 flex flex-wrap gap-4 text-sm">
-        {series.map((entry) => (
+        {animatedSeries.map((entry) => (
           <div key={entry.name} className="flex items-center gap-2 text-zinc-300">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
             <span>{entry.name}</span>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
 import KpiTile from '@/components/kpi/KpiTile'
 import YardLayoutPlan from '@/components/yard/YardLayoutPlan'
 import type { NormalizedYardSpot, YardSpotStatus } from '@/types/yms'
@@ -93,6 +94,10 @@ function normalizeDockGroup(type: string | null | undefined): DockGroupKey {
   return 'open'
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 export default async function YmsYardPage() {
   const [{ yardSpots: yardSpotRows, orders }, layoutData] = await Promise.all([
     getYmsDashboardData(),
@@ -101,6 +106,10 @@ export default async function YmsYardPage() {
   const yardSpots = normalizeYardSpots(yardSpotRows).sort(sortByGridPosition)
   const summary = summarizeYard(yardSpots)
   const openOrders = orders.filter((order) => !isClosedOrder(order.status)).length
+  const occupancyRate = summary.total > 0 ? Number(((summary.occupied / summary.total) * 100).toFixed(1)) : 0
+  const reservedRate = summary.total > 0 ? Number(((summary.reserved / summary.total) * 100).toFixed(1)) : 0
+  const blockedRate = summary.total > 0 ? Number((((summary.blocked + summary.maintenance) / summary.total) * 100).toFixed(1)) : 0
+  const orderPressure = clamp(openOrders * 6, 8, 96)
 
   const spotMetaById = new Map(
     yardSpotRows.map((spot) => [
@@ -145,6 +154,42 @@ export default async function YmsYardPage() {
         <KpiTile title="Unknown" value={summary.unknown} accent="text-sky-100 group-hover:text-sky-50" />
         <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
+
+      <SignalPulseBoard
+        title="Yard Execution Pulse"
+        description="Rolling execution view for occupied capacity, reserved positions, blocked dock pressure, and order demand across the yard."
+        summary="The yard map stays static for spatial clarity; this pulse layer keeps the page visibly active and operational."
+        signals={[
+          {
+            label: 'Occupied Capacity',
+            color: '#38bdf8',
+            level: occupancyRate,
+            displayValue: `${occupancyRate.toFixed(1)}%`,
+            note: 'Current occupied footprint across the active yard grid.',
+          },
+          {
+            label: 'Reserved Positions',
+            color: '#f59e0b',
+            level: reservedRate,
+            displayValue: `${summary.reserved}`,
+            note: 'Spots already committed to expected trailer moves or planned assignments.',
+          },
+          {
+            label: 'Blocked Pressure',
+            color: '#fb7185',
+            level: blockedRate,
+            displayValue: `${summary.blocked + summary.maintenance}`,
+            note: 'Blocked and maintenance spots reducing available operating room.',
+          },
+          {
+            label: 'Order Demand',
+            color: '#34d399',
+            level: orderPressure,
+            displayValue: `${openOrders}`,
+            note: 'Open order volume currently leaning on dock and yard execution.',
+          },
+        ]}
+      />
 
       {layoutData.layout && layoutData.items.length > 0 ? (
         <YardLayoutPlan layoutData={layoutData} yardSpots={yardSpotRows} />
