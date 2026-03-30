@@ -69,9 +69,9 @@ export default async function YmsOverviewPage() {
       </div>
 
       <SignalPulseBoard
-        title="Yard Traffic Pulse"
-        description="Continuous motion view of how spot occupancy, availability, trailer presence, and order pressure are interacting across the yard."
-        summary="This live layer keeps the YMS page active between data refreshes so visitors see a traffic system, not a static yard inventory."
+        title="Yard Traffic"
+        description="View of how spot occupancy, availability, trailer presence, and order pressure are interacting across the yard."
+        summary="YMS Traffic."
         signals={[
           {
             label: 'Occupancy Load',

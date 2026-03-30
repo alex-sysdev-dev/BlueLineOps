@@ -169,9 +169,9 @@ function buildOperationalPulse(
   if (flattened) {
     return {
       seed: buildSimulatedPulseSeed(seed[seed.length - 1] ?? base),
-      modeLabel: 'History-Assisted Pulse',
+      modeLabel: 'Pulse',
       modeSummary:
-        'The stored hourly rollups are nearly flat right now, so this panel is amplifying the real baseline with a deterministic pulse that shows backlog, CPT pressure, labor flow, and capacity behavior.',
+        'Ops Control',
     }
   }
 
@@ -179,7 +179,7 @@ function buildOperationalPulse(
     seed,
     modeLabel: 'History-Seeded Pulse',
     modeSummary:
-      'This pulse is seeded from the latest hourly executive rollups and continues moving between refreshes so visitors can understand the operating rhythm instead of staring at a static line.',
+      'Analtictal Data',
   }
 }
 
@@ -277,10 +277,10 @@ export default async function ExecutiveControlCenter() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
             <span className="text-blue-500">BlueLineOps</span>{' '}
-            <span className="text-[var(--foreground)]">Facility Control Center</span>
+            <span className="text-[var(--foreground)]">Site Performance</span>
           </h1>
           <p className="mt-2 max-w-3xl text-zinc-400">
-            Live executive visibility across service, backlog, labor, capacity, quality, and trailer flow from the new Supabase intelligence views.
+            Site Performance
           </p>
         </div>
 
@@ -308,7 +308,7 @@ export default async function ExecutiveControlCenter() {
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Operational Brief</h2>
           <p className="mt-2 text-sm text-zinc-400">
-            Deterministic summary from the current executive snapshot. This is the same contract the agent will use later.
+            Ops Brief
           </p>
 
           <div className="mt-5 space-y-3">

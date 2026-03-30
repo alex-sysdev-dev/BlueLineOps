@@ -203,7 +203,7 @@ export default function PickPackFloorPlan({ layoutData, data }: Props) {
       layout={layoutData.layout}
       items={layoutData.items}
       title="BlueLineOps Pick/Pack Floor Plan"
-      description="Layout-driven floor view with live operational overlays for pick, pack, staging, and QA zones."
+      description=" Pick/Pack floor."
       renderItem={(item) => {
         const stats = itemStats(item, data)
         const tone = cardTone(item.item_type)

@@ -33,9 +33,9 @@ export default async function InboundShipmentsPage() {
       </h1>
 
       <SignalPulseBoard
-        title="Shipment Lane Pulse"
-        description="Continuous motion view of scheduled appointments, arrivals at dock, receipt completion, and supplier throughput concentration."
-        summary="This keeps the shipment page active for visitors even when table data is sparse or clustered around a few timestamps."
+        title="Shipment Lane"
+        description="View of scheduled appointments, arrivals at dock, receipt completion, and supplier throughput concentration."
+        summary="Inbound Tracker"
         signals={[
           {
             label: 'Scheduled',

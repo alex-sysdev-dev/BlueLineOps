@@ -56,8 +56,8 @@ export default async function InboundPage() {
 
       <SignalPulseBoard
         title="Inbound Flow Pulse"
-        description="Continuous motion layer for scheduled arrivals, receipt conversion, QA friction, and putaway pressure."
-        summary="Inbound now reads like a live receiving board by exposing the motion between scheduled, arrived, received, and QA-constrained inventory."
+        description="Scheduled Loads."
+        summary="Inbound Tracker."
         signals={[
           {
             label: 'Schedule Load',

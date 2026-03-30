@@ -122,13 +122,13 @@ export default async function AssociatesPage() {
             <span className="text-[var(--foreground)]">Dashboard</span>
           </h1>
           <p className="mt-2 max-w-3xl text-zinc-400">
-            Live workforce readiness, certification coverage, and UPH performance from the new associate skills and performance views.
+            Live workforce readiness, certification coverage, and UPH performance.
           </p>
         </div>
 
         <div className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.92),rgba(15,23,42,0.84))] px-5 py-4 text-sm text-zinc-300">
           <div className="text-zinc-400">Performance basis</div>
-          <div className="mt-1 font-semibold text-zinc-100">Today&apos;s tracked output by skill and UPH target</div>
+          <div className="mt-1 font-semibold text-zinc-100">Output Tracker</div>
         </div>
       </header>
 
@@ -142,9 +142,9 @@ export default async function AssociatesPage() {
       </div>
 
       <SignalPulseBoard
-        title="Workforce Readiness Pulse"
-        description="Continuous view of labor coverage, tracked output, below-target risk, and top-end productivity strength across the current workforce."
-        summary="This keeps the associates page feeling like an active labor-control surface instead of a static HR report."
+        title="Associate Performance"
+        description="Total Hourly Workforce Tracker."
+        summary="Associate Performance"
         signals={[
           {
             label: 'Tracked Output',
@@ -238,13 +238,13 @@ export default async function AssociatesPage() {
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">At-Risk Performers</h2>
           <p className="mt-2 text-sm text-zinc-400">
-            Current associates below or trailing target UPH. Empty state is expected until task events are loaded.
+            Current associates below or trailing target UPH.
           </p>
 
           <div className="mt-5 space-y-3">
             {riskRows.length === 0 ? (
               <div className="rounded-xl border border-dashed border-zinc-700/60 bg-zinc-900/35 p-4 text-sm text-zinc-400">
-                No below-target associates returned yet. Load demo task events to activate this panel.
+                No below-target associates returned yet.
               </div>
             ) : (
               riskRows.map((row) => (
@@ -285,7 +285,7 @@ export default async function AssociatesPage() {
           <div>
             <h2 className="text-xl font-semibold text-zinc-100">Certification Matrix</h2>
             <p className="mt-1 text-sm text-zinc-400">
-              Role training, equipment authorization, and attachment certification from `associate_skill_matrix`.
+              Associate Roles.
             </p>
           </div>
           <div className="text-sm text-zinc-400">Source: `associate_skill_matrix` + `associate_current_performance`</div>

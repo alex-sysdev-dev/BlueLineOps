@@ -51,33 +51,33 @@ export default async function QaPage() {
       </div>
 
       <SignalPulseBoard
-        title="Quality Control Pulse"
-        description="Rolling live view of inspection volume, pass confidence, failure exposure, and inbound QA queue pressure."
-        summary="The QA page now reads like an active control room by showing quality pressure as a live signal, not just a historical chart."
+        title="Quality Control"
+        description="Live View."
+        summary="Quality Table."
         signals={[
           {
-            label: 'Inspection Load',
+            label: 'Inspection',
             color: '#38bdf8',
             level: clamp(kpis.totalInspections * 5, 8, 96),
             displayValue: `${kpis.totalInspections}`,
             note: 'Inspection events currently driving QA activity.',
           },
           {
-            label: 'Pass Confidence',
+            label: 'Pass Rate',
             color: '#34d399',
             level: clamp(kpis.passRate, 8, 96),
             displayValue: `${kpis.passRate.toFixed(1)}%`,
-            note: 'Pass rate across the current inspection set.',
+            note: 'Pass rate.',
           },
           {
-            label: 'Failure Exposure',
+            label: 'Failure Rate',
             color: '#fb7185',
             level: clamp(failRate, 8, 96),
             displayValue: `${kpis.failed}`,
-            note: 'Failed inspections requiring containment or follow-up.',
+            note: 'Failed Inspections'
           },
           {
-            label: 'Queue Pressure',
+            label: 'Queue',
             color: '#f59e0b',
             level: clamp(queueRate || (crossKpis.inboundQaPending + crossKpis.inboundQaBlocked) * 6, 8, 96),
             displayValue: `${crossKpis.inboundQaPending + crossKpis.inboundQaBlocked}`,
@@ -98,7 +98,7 @@ export default async function QaPage() {
         />
 
         <BarChart
-          title="Inspector Output"
+          title="Inbound Loads"
           description="Inspected units vs damaged units by inspector."
           labels={inspectorBreakdown.labels}
           series={[

@@ -120,44 +120,44 @@ export default async function PickPackControlTower() {
       </div>
 
       <SignalPulseBoard
-        title="Outbound Execution Pulse"
-        description="Continuous motion layer for task backlog, lateness, station utilization, and release flow across outbound execution."
-        summary="The control tower now stays active even when historical task events are sparse, so visitors see operational movement instead of a frozen board."
+        title="Outbound Performance"
+        description="Outbound metrics"
+        summary="Outbound Tracker"
         signals={[
           {
-            label: 'Backlog Load',
+            label: 'Backlog',
             color: '#38bdf8',
             level: backlogRate,
             displayValue: `${kpis.openTasks}`,
-            note: 'Open pick work still sitting in the pipeline.',
+            note: 'Open pick work still Available.',
           },
           {
-            label: 'Late Pressure',
+            label: 'Late Risk',
             color: '#fb7185',
             level: lateRate,
             displayValue: `${kpis.lateTasks}`,
-            note: 'Tasks slipping behind due time inside the current open backlog.',
+            note: 'Picks not Yet Picked',
           },
           {
-            label: 'Station Engagement',
+            label: 'Pick/Pack Station Utilization',
             color: '#34d399',
             level: kpis.avgUtilization,
             displayValue: `${kpis.avgUtilization.toFixed(1)}%`,
             note: 'Average utilization across the running pack stations.',
           },
           {
-            label: 'Release Flow',
+            label: 'Work Flow',
             color: '#f59e0b',
             level: throughputRate,
             displayValue: `${kpis.unitsRemaining}`,
-            note: 'Remaining unit volume still moving through release and execution.',
+            note: 'Remaining unit volume',
           },
         ]}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <LineCharts
-          title="Task Pipeline Trend"
+          title="Task Trend"
           description="Open, completed, and blocked pick activity over the last 12 days."
           labels={taskTrend.labels}
           series={[
@@ -168,7 +168,7 @@ export default async function PickPackControlTower() {
         />
 
         <BarChart
-          title="Station Load Snapshot"
+          title="Station Snapshot"
           description="Top stations by utilization and queue depth."
           labels={stationWorkload.labels}
           series={[
@@ -180,8 +180,8 @@ export default async function PickPackControlTower() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
-          <h2 className="text-xl font-semibold text-zinc-100">Open Pick Tasks</h2>
-          <p className="mt-1 text-sm text-zinc-400">Source: `pick_tasks`</p>
+          <h2 className="text-xl font-semibold text-zinc-100">Open Picks</h2>
+          <p className="mt-1 text-sm text-zinc-400">Available Picks</p>
 
           {data.tasks.length === 0 ? (
             <p className="mt-4 text-sm text-zinc-400">No rows found in `pick_tasks`.</p>
@@ -221,7 +221,7 @@ export default async function PickPackControlTower() {
 
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Inbound / QA Queue</h2>
-          <p className="mt-1 text-sm text-zinc-400">Sources: `inbound_shipments`, `inbound_items`, `qa_inspections`</p>
+          <p className="mt-1 text-sm text-zinc-400">Shipments Pending Recieve</p>
 
           {data.inboundQaQueue.length === 0 ? (
             <p className="mt-4 text-sm text-zinc-400">No joined inbound/QA queue rows found.</p>
