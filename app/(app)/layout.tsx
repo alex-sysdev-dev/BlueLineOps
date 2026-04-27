@@ -1,5 +1,6 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import AgentWidget from "@/components/agent/AgentWidget";
 
 export default function AppLayout({
   children,
@@ -15,6 +16,7 @@ export default function AppLayout({
           {children}
         </main>
       </div>
+      <AgentWidget />
     </div>
   );
 }
