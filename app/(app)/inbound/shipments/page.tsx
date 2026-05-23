@@ -6,6 +6,8 @@ import { buildInboundStatusTrend, buildSupplierVolume } from '@/lib/calculations
 import { getInboundItems, getInboundShipments } from '@/lib/queries/inbound'
 import type { Shipment } from '@/types/inbound'
 
+export const dynamic = 'force-dynamic'
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }

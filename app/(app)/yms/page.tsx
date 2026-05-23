@@ -4,6 +4,8 @@ import KpiTile from '@/components/kpi/KpiTile'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
 
+export const dynamic = 'force-dynamic'
+
 const CLOSED_ORDER_TOKENS = ['cancel', 'close', 'complete', 'ship', 'deliver']
 
 function isClosedOrder(status: string | null | undefined): boolean {

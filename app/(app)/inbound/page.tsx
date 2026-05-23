@@ -9,6 +9,8 @@ import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
 import type { Shipment } from '@/types/inbound'
 
+export const dynamic = 'force-dynamic'
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }

@@ -39,3 +39,8 @@
 **What was decided:** Delete the empty `supabase/migrations/20260523011235_remote_schema.sql` file before pushing the security-invoker migration.
 **Why:** The file was 0 bytes but still appeared as a pending remote migration, which made the Supabase push broader than the requested security fix.
 **What was rejected:** Pushing both pending migration history entries was rejected because only the security-invoker view fix should be applied.
+
+## 2026-05-23, Vercel preview build avoids Supabase prerender
+**What was decided:** Make the Supabase client lazy and force live operational pages to dynamic rendering.
+**Why:** Vercel preview builds can fail during static prerender when Supabase preview environment variables are missing or branch-scoped differently, while local builds pass because `.env.local` exists.
+**What was rejected:** Keeping database-backed operations pages static was rejected because it risks stale KPI data and makes preview deployments fragile.

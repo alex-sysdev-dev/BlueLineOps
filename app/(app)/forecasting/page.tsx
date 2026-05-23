@@ -10,6 +10,8 @@ import {
 } from '@/lib/queries/executive'
 import type { ExecutiveKpiForecastRow, ExecutiveKpiHistoryRow } from '@/types/executive'
 
+export const dynamic = 'force-dynamic'
+
 function formatDateLabel(value: string): string {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) {

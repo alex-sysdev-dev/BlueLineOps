@@ -7,6 +7,8 @@ import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
 import { getFacilityLayoutData } from '@/lib/queries/layouts'
 
+export const dynamic = 'force-dynamic'
+
 type DockGroupKey = 'outbound' | 'inbound' | 'open' | 'flex'
 
 const CLOSED_ORDER_TOKENS = ['cancel', 'close', 'complete', 'ship', 'deliver']
