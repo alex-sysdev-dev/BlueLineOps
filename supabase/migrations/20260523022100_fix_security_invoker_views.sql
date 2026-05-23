@@ -1,0 +1,16 @@
+alter view if exists public.associate_current_performance set (security_invoker = true);
+alter view if exists public.associate_daily_performance set (security_invoker = true);
+alter view if exists public.associate_skill_matrix set (security_invoker = true);
+alter view if exists public.current_dock_utilization set (security_invoker = true);
+alter view if exists public.current_labor_productivity set (security_invoker = true);
+alter view if exists public.current_quality_score set (security_invoker = true);
+alter view if exists public.current_trailer_dwell set (security_invoker = true);
+alter view if exists public.current_yard_status set (security_invoker = true);
+alter view if exists public.executive_kpi_forecast_daily set (security_invoker = true);
+alter view if exists public.executive_kpi_history_daily set (security_invoker = true);
+alter view if exists public.executive_kpi_history_hourly set (security_invoker = true);
+alter view if exists public.executive_kpi_history_latest set (security_invoker = true);
+alter view if exists public.executive_kpi_max_lines set (security_invoker = true);
+alter view if exists public.executive_kpi_max_lines_daily set (security_invoker = true);
+alter view if exists public.executive_kpi_snapshot set (security_invoker = true);
+alter view if exists public.order_cpt_risk set (security_invoker = true);

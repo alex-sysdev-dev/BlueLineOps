@@ -24,3 +24,18 @@
 **In progress:** Vercel redeploy is the active next step. The Vercel CLI path was unreliable from the automation shell, so use the Vercel dashboard or GitHub auto-deploy.
 **Decisions made:** Use hosted Supabase for this app, not `supabase start`; Vercel must include `OPENAI_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and optionally `OPENAI_AGENT_MODEL`; do not rely on `SUPABASE_URL` or `SUPABASE_ANON_KEY` alone because the current app code does not read those names.
 **Next session:** Verify the Vercel production deployment, test `/api/health`, then test Supabase-backed pages and the OpenAI agent route. If deployment has not triggered, commit and push the already staged `.env.example` and `.gitignore` changes from `D:\Projects\BlueLineOps`.
+
+## 2026-05-23, MCP route uses request origin
+**What was decided:** Change `app/api/agent/mcp/route.ts` so MCP tool calls derive their base URL from the incoming request instead of hardcoding `https://bluelineopsok.vercel.app`.
+**Why:** Supabase branches, Vercel preview deployments, and localhost need MCP calls to stay inside the current environment instead of routing back to production.
+**What was rejected:** Keeping the production URL was rejected because it makes branch validation misleading and can hide preview-specific Supabase or deployment issues.
+
+## 2026-05-23, Public Supabase views use security invoker
+**What was decided:** Add a Supabase migration that sets public operational views to `security_invoker = true`.
+**Why:** Supabase flags public security definer views because they can bypass the invoking role and row-level security; the app's exposed operational views should respect caller permissions.
+**What was rejected:** Leaving the views with default security definer behavior was rejected because it keeps the Security Definer View advisor finding active.
+
+## 2026-05-23, Remove empty Supabase pull migration
+**What was decided:** Delete the empty `supabase/migrations/20260523011235_remote_schema.sql` file before pushing the security-invoker migration.
+**Why:** The file was 0 bytes but still appeared as a pending remote migration, which made the Supabase push broader than the requested security fix.
+**What was rejected:** Pushing both pending migration history entries was rejected because only the security-invoker view fix should be applied.

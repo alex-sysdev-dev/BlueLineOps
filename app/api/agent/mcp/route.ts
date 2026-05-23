@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = "https://bluelineopsok.vercel.app";
+function getBaseUrl(req: NextRequest) {
+  const url = new URL(req.url);
+  return `${url.protocol}//${url.host}`;
+}
 
 const tools = [
   {
@@ -61,7 +64,7 @@ const tools = [
   },
 ];
 
-async function callTool(name: string, args: Record<string, unknown>) {
+async function callTool(baseUrl: string, name: string, args: Record<string, unknown>) {
   const params = new URLSearchParams();
   Object.entries(args).forEach(([k, v]) => {
     if (v != null) params.set(k, String(v));
@@ -78,8 +81,12 @@ async function callTool(name: string, args: Record<string, unknown>) {
   const path = endpoints[name];
   if (!path) throw new Error(`Unknown tool: ${name}`);
 
-  const url = `${BASE}${path}${params.toString() ? "?" + params.toString() : ""}`;
-  const res = await fetch(url);
+  const url = `${baseUrl}${path}${params.toString() ? "?" + params.toString() : ""}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Tool call failed: ${res.status}`);
+  }
+
   return res.json();
 }
 
@@ -107,6 +114,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { method, params, id } = body;
+  const baseUrl = getBaseUrl(req);
 
   if (method === "initialize") {
     return NextResponse.json({
@@ -131,7 +139,7 @@ export async function POST(req: NextRequest) {
   if (method === "tools/call") {
     const { name, arguments: args } = params;
     try {
-      const result = await callTool(name, args || {});
+      const result = await callTool(baseUrl, name, args || {});
       return NextResponse.json({
         jsonrpc: "2.0",
         id,
