@@ -17,3 +17,10 @@
 **What was decided:** Run health-check gates with direct `node` invocations for `typescript`, `next`, and `eslint`, and scope lint to `app components lib types` instead of the bare `npm.cmd run lint` script.
 **Why:** In this checkout, `npm.cmd run lint`, `npx.cmd tsc --noEmit`, and `npx.cmd next build` all timed out under automation, while `node .\node_modules\typescript\bin\tsc --noEmit --pretty false`, `node .\node_modules\next\dist\bin\next build`, and `node .\node_modules\eslint\bin\eslint.js app components lib types --max-warnings=0` completed successfully.
 **What was rejected:** Treating the wrapper-command timeouts as code failures was rejected because the direct CLI entrypoints proved the TypeScript, build, and scoped lint surfaces pass.
+
+## Session Summary, 2026-05-22
+**Worked on:** Getting BlueLineOps ready for Vercel after Supabase and Vercel billing were restored.
+**Completed:** Confirmed the repo root is `D:\Projects\BlueLineOps`, confirmed `.env.local` uses hosted Supabase keys, identified the exact Vercel env var names the app reads, staged `.env.example` and `.gitignore` for a deployment-safe commit, and confirmed the OpenAI key was rotated after exposure.
+**In progress:** Vercel redeploy is the active next step. The Vercel CLI path was unreliable from the automation shell, so use the Vercel dashboard or GitHub auto-deploy.
+**Decisions made:** Use hosted Supabase for this app, not `supabase start`; Vercel must include `OPENAI_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and optionally `OPENAI_AGENT_MODEL`; do not rely on `SUPABASE_URL` or `SUPABASE_ANON_KEY` alone because the current app code does not read those names.
+**Next session:** Verify the Vercel production deployment, test `/api/health`, then test Supabase-backed pages and the OpenAI agent route. If deployment has not triggered, commit and push the already staged `.env.example` and `.gitignore` changes from `D:\Projects\BlueLineOps`.
