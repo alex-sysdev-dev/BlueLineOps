@@ -44,3 +44,8 @@
 **What was decided:** Make the Supabase client lazy and force live operational pages to dynamic rendering.
 **Why:** Vercel preview builds can fail during static prerender when Supabase preview environment variables are missing or branch-scoped differently, while local builds pass because `.env.local` exists.
 **What was rejected:** Keeping database-backed operations pages static was rejected because it risks stale KPI data and makes preview deployments fragile.
+
+## 2026-05-24, Restore deleted checkout from remote branch
+**What was decided:** Recreate the missing checkout at `C:\alex-sysdev-dev\BlueLineOps` from `origin/working-bluelineops-updates`.
+**Why:** The supplied working directory and the prior `D:\Projects\BlueLineOps` checkout were both missing locally, while the remote working branch still existed on GitHub.
+**What was rejected:** Rebuilding from another branch or moving the checkout into OneDrive/Documents was rejected because Alexander asked to fix the deleted files from the open remote branch.
