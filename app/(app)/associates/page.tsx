@@ -4,6 +4,8 @@ import KpiTile from '@/components/kpi/KpiTile'
 import { getAssociateCurrentPerformance, getAssociateSkillMatrix } from '@/lib/queries/associates'
 import type { AssociatePerformanceRow, AssociateSkillEntry, AssociateSkillMatrixRow } from '@/types/associates'
 
+export const dynamic = 'force-dynamic'
+
 function titleCase(value: string | null | undefined): string {
   if (!value) {
     return 'Unknown'

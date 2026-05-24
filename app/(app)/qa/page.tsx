@@ -8,6 +8,8 @@ import { getQaInspections } from '@/lib/queries/qa'
 import { getCrossFunctionalKpis, getCycleCountTasksCount } from '@/lib/queries/operations'
 import type { QaInspection } from '@/types/qa'
 
+export const dynamic = 'force-dynamic'
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
