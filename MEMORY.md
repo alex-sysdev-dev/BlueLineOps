@@ -49,3 +49,8 @@
 **What was decided:** Recreate the missing checkout at `C:\alex-sysdev-dev\BlueLineOps` from `origin/working-bluelineops-updates`.
 **Why:** The supplied working directory and the prior `D:\Projects\BlueLineOps` checkout were both missing locally, while the remote working branch still existed on GitHub.
 **What was rejected:** Rebuilding from another branch or moving the checkout into OneDrive/Documents was rejected because Alexander asked to fix the deleted files from the open remote branch.
+
+## 2026-05-25, Restore F drive local env placeholder
+**What was decided:** Create `F:\alex-sysdev-dev\BlueLineOps\.env.local` from `.env.example` without adding secrets.
+**Why:** The F drive checkout was missing `.env.local`, and no C: or D: checkout contained BlueLineOps secrets to copy. The app still needs real Supabase and OpenAI values before local runtime is fully configured.
+**What was rejected:** Inventing keys, copying ChatterBot secrets, or overwriting an existing env file was rejected because those would create invalid or cross-project configuration.
