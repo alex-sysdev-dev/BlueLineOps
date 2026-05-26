@@ -122,7 +122,7 @@ function buildOperationsFlow(
   if (hourlyHistory.length === 0) {
     return {
       seed: buildSimulatedFlowSeed(base),
-      modeLabel: 'Live Flow',
+      modeLabel: 'Live',
       modeSummary: 'Running from current KPI snapshot.',
     }
   }
@@ -168,14 +168,14 @@ function buildOperationsFlow(
   if (flattened) {
     return {
       seed: buildSimulatedFlowSeed(seed[seed.length - 1] ?? base),
-      modeLabel: 'Live Flow',
+      modeLabel: 'Live',
       modeSummary: 'Ops Control',
     }
   }
 
   return {
     seed,
-    modeLabel: 'History-Seeded Flow',
+    modeLabel: 'Live',
     modeSummary:
       'History-based operational readout',
   }

@@ -69,3 +69,8 @@
 **What was decided:** Add a server-only Supabase client backed by `SUPABASE_SERVICE_ROLE_KEY` and use it for server-rendered operational query modules that power YMS, Pick/Pack, inbound, QA, layouts, operations, and associates.
 **Why:** The browser anon key returned zero rows for the operational and layout tables, while the service role key could read the live Supabase data needed for `/yms/yard` and `/outbound/floor`.
 **What was rejected:** Changing RLS policies or writing mover state to Supabase was rejected because this restore only needs live read access and page-session mover behavior.
+
+## 2026-05-26, Executive dashboard reads use server Supabase client
+**What was decided:** Move executive KPI, history, forecast, and CPT risk reads to the server-only Supabase client and keep dashboard copy as `CPT Risk` and `Live`.
+**Why:** The executive dashboard is server-rendered operational data and should use the same service-role read path as the restored YMS and Pick/Pack pages; the current dashboard request also requires removing `CPT Exposure` and `Live Flow` copy.
+**What was rejected:** Changing RLS policies or exposing the service role key to client components was rejected because server-only reads solve the page data path without weakening browser access.

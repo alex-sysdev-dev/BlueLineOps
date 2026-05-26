@@ -20,6 +20,7 @@ const links = [
   { name: "QA Dashboard", href: "/qa" },
   { name: "Inbound Dashboard", href: "/inbound" },
   { name: "Inbound Shipments", href: "/inbound/shipments" },
+  { name: "Suppliers", href: "/suppliers" },
   { name: "Outbound Dashboard", href: "/outbound" },
   { name: "Pick/Pack Floor", href: "/outbound/floor" },
   { name: "YMS Overview", href: "/yms" },
