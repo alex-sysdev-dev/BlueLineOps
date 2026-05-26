@@ -212,7 +212,7 @@ export default function LandingHero() {
 
           {/* Enterprise Login */}
           <div className={[s.fadeUp, s.d050, 'pointer-events-auto self-end'].join(' ')}>
-            <Link href="/login">
+            <Link href="/login?mode=enterprise">
               <button
                 type="button"
                 className="

@@ -70,7 +70,33 @@
 **Why:** The browser anon key returned zero rows for the operational and layout tables, while the service role key could read the live Supabase data needed for `/yms/yard` and `/outbound/floor`.
 **What was rejected:** Changing RLS policies or writing mover state to Supabase was rejected because this restore only needs live read access and page-session mover behavior.
 
+## 2026-05-26, Session — Globe landing, suppliers, DB seeding, production deploy
+**Completed:**
+- Replaced static PNG landing page with `globe.gl` interactive WebGL globe (earth-night texture, ~500 city-light nodes on real coordinates, auto-rotate, click node → `/login`). See `components/landing/GlobeScene.tsx`, `LandingHero.tsx`, `LandingHero.module.css`.
+- Created `/login` page (`app/login/page.tsx`) — dark enterprise style, routes to `/dashboard` on submit.
+- Built Suppliers feature: `types/suppliers.ts`, `lib/queries/suppliers.ts`, `app/(app)/suppliers/page.tsx`, Sidebar link added.
+- Seeded all live KPI driver tables (labor_time_entries, safety_incidents, dock_events, orders with CPT risk). Fixed dock type mismatch (DOCK-* spots now typed inbound/outbound). Fixed avg_order_age_hours, pending_pick_orders count.
+- Created `pg_cron` job `simulate-order-flow` running `simulate_order_flow(6,6,6,8)` every 10 min to cycle orders.
+- Pushed to `main`, deployed to Vercel production (`dpl_45gUb1NwJrX1JC87M9WMgkftQa6n`, state: READY).
+**Active working directory:** `F:\alex-sysdev-dev\BlueLineOps` (F drive, not C or D).
+**Branch pattern:** work on `Proposal`, merge to `main`, push → Vercel auto-deploys.
+
 ## 2026-05-26, Executive dashboard reads use server Supabase client
 **What was decided:** Move executive KPI, history, forecast, and CPT risk reads to the server-only Supabase client and keep dashboard copy as `CPT Risk` and `Live`.
 **Why:** The executive dashboard is server-rendered operational data and should use the same service-role read path as the restored YMS and Pick/Pack pages; the current dashboard request also requires removing `CPT Exposure` and `Live Flow` copy.
 **What was rejected:** Changing RLS policies or exposing the service role key to client components was rejected because server-only reads solve the page data path without weakening browser access.
+
+## 2026-05-26, Supabase magic-link auth uses owner-only enterprise gate
+**What was decided:** Add Supabase magic-link signup/login with a public signup mode and a server-side `ENTERPRISE_ACCESS_EMAILS` allowlist for protected BlueLineOps app routes.
+**Why:** Users need to be able to sign up, but the Enterprise Login path should only work for Alexander or explicitly allowlisted owner emails.
+**What was rejected:** Hardcoding owner email in client code or relying on client-only checks was rejected because enterprise access must be enforced before protected routes render.
+
+## 2026-05-26, Globe nodes use population-weighted light clusters
+**What was decided:** Replace the fixed tier globe markers with deterministic population and density weighted light clusters, hub rings, and route arcs in `components/landing/GlobeScene.tsx`.
+**Why:** The landing globe needs to look more like a dense global operations network, with small city-light nodes clustered around real high-population metros instead of sparse equal-weight markers.
+**What was rejected:** Random marker placement was rejected because it changes on every load and does not visually communicate actual population density.
+
+## 2026-05-26, Supabase magic-link email template is review-only first
+**What was decided:** Create `docs/supabase-magic-link-email-template.html` as a review-only Supabase Auth email template with the deployed `Landing.png` image wrapped by `{{ .ConfirmationURL }}`.
+**Why:** Alexander needs to inspect and approve the email content before it is copied into Supabase Auth templates.
+**What was rejected:** Wiring the template directly into Supabase before approval was rejected because the email copy and visual treatment still need owner review.
