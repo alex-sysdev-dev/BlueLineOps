@@ -3,76 +3,196 @@
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-// Real city lat/lng — all on land.
-// format: [lat, lng, tier] where tier 1 = major hub, 2 = regional, 3 = secondary
-const CITIES: Array<[number, number, number]> = [
-  // North America — [lat, lng, tier]
-  [40.71,-74.01,1],[34.05,-118.24,1],[41.88,-87.63,1],[37.77,-122.42,1],[47.61,-122.33,2],
-  [25.77,-80.19,2],[33.75,-84.39,2],[39.74,-104.98,2],[42.36,-71.06,2],[43.65,-79.38,2],
-  [45.50,-73.57,2],[49.25,-123.12,2],[19.43,-99.13,1],[20.66,-103.35,2],[25.67,-100.31,2],
-  [32.78,-96.80,2],[36.17,-115.14,2],[29.42,-98.49,3],[29.76,-95.37,2],[14.09,-87.21,3],
-  // South America
-  [-23.55,-46.63,1],[-22.91,-43.17,1],[-34.61,-58.38,1],[-12.05,-77.04,2],[4.71,-74.07,2],
-  [-33.45,-70.67,2],[-3.72,-38.54,3],[-19.92,-43.94,2],[-30.03,-51.23,2],[-8.05,-34.88,3],
-  [10.48,-66.88,2],[6.25,-75.56,3],[-0.22,-78.51,3],[-34.90,-56.19,3],[-3.10,-60.03,3],
-  // Europe
-  [51.51,-0.13,1],[48.86,2.35,1],[52.52,13.40,1],[40.42,-3.70,1],[41.39,2.15,1],
-  [41.90,12.49,1],[45.47,9.19,2],[48.21,16.37,2],[52.23,21.01,2],[47.50,19.04,2],
-  [50.08,14.44,2],[50.85,4.35,2],[52.37,4.90,2],[59.33,18.07,2],[55.68,12.57,2],
-  [60.17,24.94,2],[38.72,-9.14,2],[37.98,23.73,2],[55.76,37.62,1],[59.93,30.32,2],
-  [48.14,11.58,2],[53.55,9.99,2],[50.11,8.68,2],[47.38,8.54,2],[44.43,26.10,2],
-  [50.45,30.52,2],[44.80,20.46,3],[45.75,4.85,3],[43.30,5.37,3],[53.48,-2.24,3],
-  // Africa
-  [30.05,31.25,1],[6.46,3.38,2],[-26.20,28.04,2],[-33.93,18.42,2],[-1.29,36.82,2],
-  [9.02,38.74,2],[33.59,-7.62,2],[15.55,32.53,2],[-6.79,39.21,3],[9.07,7.40,2],
-  [5.56,-0.20,3],[36.82,10.16,2],[36.74,3.06,2],[0.32,32.58,3],[-4.32,15.32,3],
-  // Middle East
-  [25.20,55.27,1],[24.69,46.72,2],[35.69,51.39,2],[41.01,28.95,1],[39.93,32.86,2],
-  [32.08,34.78,2],[25.29,51.53,2],[29.37,47.98,2],[33.34,44.40,3],[21.49,39.18,3],
-  // South Asia
-  [19.08,72.88,1],[28.66,77.23,1],[12.97,77.59,1],[22.57,88.36,2],[13.08,80.27,2],
-  [17.39,78.49,2],[23.03,72.59,2],[24.86,67.01,2],[31.55,74.34,2],[23.72,90.41,2],
-  [6.93,79.86,3],[27.72,85.32,3],[33.72,73.04,2],
-  // Southeast Asia
-  [1.35,103.82,1],[3.14,101.69,2],[13.75,100.52,2],[-6.21,106.85,2],[14.60,120.98,2],
-  [10.82,106.63,2],[21.03,105.83,2],[22.40,114.11,2],[11.57,104.92,3],[-7.25,112.75,3],
-  [-8.67,115.21,3],[5.97,116.07,3],[16.87,96.19,3],
-  // East Asia
-  [35.68,139.69,1],[37.57,126.98,1],[39.91,116.40,1],[31.23,121.47,1],[34.69,135.50,2],
-  [35.18,136.91,2],[35.18,129.07,2],[23.13,113.26,2],[22.54,114.06,2],[25.05,121.56,2],
-  [29.56,106.55,2],[30.59,114.31,2],[30.66,104.07,2],[39.13,117.18,2],[34.27,108.95,3],
-  // Central Asia & Russia
-  [55.01,82.92,2],[56.84,60.61,2],[43.12,131.89,2],[41.30,69.24,2],[43.26,76.93,2],
-  [54.99,73.37,3],[55.99,92.87,3],
-  // Oceania
-  [-33.87,151.21,1],[-37.81,144.96,2],[-27.47,153.03,2],[-31.95,115.86,2],
-  [-36.87,174.76,2],[-34.93,138.60,3],[-35.28,149.13,3],
+type PopulationCluster = {
+  name: string
+  lat: number
+  lng: number
+  population: number
+  density: number
+  hub: 'global' | 'regional' | 'local'
+}
+
+type GlobeNode = {
+  lat: number
+  lng: number
+  radius: number
+  color: string
+}
+
+type GlobeArc = {
+  startLat: number
+  startLng: number
+  endLat: number
+  endLng: number
+  color: string[]
+}
+
+type GlobeRing = {
+  lat: number
+  lng: number
+  color: string
+}
+
+const POPULATION_CLUSTERS: PopulationCluster[] = [
+  { name: 'New York', lat: 40.71, lng: -74.01, population: 19.6, density: 11.3, hub: 'global' },
+  { name: 'Los Angeles', lat: 34.05, lng: -118.24, population: 13.2, density: 8.1, hub: 'global' },
+  { name: 'Chicago', lat: 41.88, lng: -87.63, population: 9.4, density: 6.8, hub: 'regional' },
+  { name: 'Dallas', lat: 32.78, lng: -96.8, population: 8.1, density: 4.2, hub: 'regional' },
+  { name: 'Miami', lat: 25.77, lng: -80.19, population: 6.1, density: 5.9, hub: 'regional' },
+  { name: 'Toronto', lat: 43.65, lng: -79.38, population: 6.7, density: 6.3, hub: 'regional' },
+  { name: 'Mexico City', lat: 19.43, lng: -99.13, population: 22.5, density: 10.7, hub: 'global' },
+  { name: 'Sao Paulo', lat: -23.55, lng: -46.63, population: 22.6, density: 10.9, hub: 'global' },
+  { name: 'Rio de Janeiro', lat: -22.91, lng: -43.17, population: 13.7, density: 8.2, hub: 'regional' },
+  { name: 'Buenos Aires', lat: -34.61, lng: -58.38, population: 16.7, density: 7.8, hub: 'regional' },
+  { name: 'Bogota', lat: 4.71, lng: -74.07, population: 11.6, density: 8.5, hub: 'regional' },
+  { name: 'Lima', lat: -12.05, lng: -77.04, population: 11.3, density: 7.9, hub: 'regional' },
+  { name: 'London', lat: 51.51, lng: -0.13, population: 14.8, density: 9.1, hub: 'global' },
+  { name: 'Paris', lat: 48.86, lng: 2.35, population: 11.3, density: 10.2, hub: 'global' },
+  { name: 'Amsterdam', lat: 52.37, lng: 4.9, population: 2.7, density: 6.9, hub: 'regional' },
+  { name: 'Brussels', lat: 50.85, lng: 4.35, population: 2.1, density: 7.1, hub: 'regional' },
+  { name: 'Frankfurt', lat: 50.11, lng: 8.68, population: 2.7, density: 5.8, hub: 'regional' },
+  { name: 'Madrid', lat: 40.42, lng: -3.7, population: 6.8, density: 5.6, hub: 'regional' },
+  { name: 'Barcelona', lat: 41.39, lng: 2.15, population: 5.7, density: 6.9, hub: 'regional' },
+  { name: 'Milan', lat: 45.47, lng: 9.19, population: 5.3, density: 6.4, hub: 'regional' },
+  { name: 'Istanbul', lat: 41.01, lng: 28.95, population: 16.0, density: 9.7, hub: 'global' },
+  { name: 'Moscow', lat: 55.76, lng: 37.62, population: 17.1, density: 8.8, hub: 'global' },
+  { name: 'Cairo', lat: 30.05, lng: 31.25, population: 22.6, density: 11.0, hub: 'global' },
+  { name: 'Lagos', lat: 6.46, lng: 3.38, population: 16.6, density: 10.5, hub: 'global' },
+  { name: 'Johannesburg', lat: -26.2, lng: 28.04, population: 9.6, density: 5.7, hub: 'regional' },
+  { name: 'Nairobi', lat: -1.29, lng: 36.82, population: 5.9, density: 6.0, hub: 'regional' },
+  { name: 'Dubai', lat: 25.2, lng: 55.27, population: 3.7, density: 6.8, hub: 'global' },
+  { name: 'Riyadh', lat: 24.69, lng: 46.72, population: 7.8, density: 4.8, hub: 'regional' },
+  { name: 'Mumbai', lat: 19.08, lng: 72.88, population: 21.7, density: 12.0, hub: 'global' },
+  { name: 'Delhi', lat: 28.66, lng: 77.23, population: 33.8, density: 12.8, hub: 'global' },
+  { name: 'Bengaluru', lat: 12.97, lng: 77.59, population: 14.0, density: 9.0, hub: 'global' },
+  { name: 'Dhaka', lat: 23.72, lng: 90.41, population: 23.9, density: 13.0, hub: 'global' },
+  { name: 'Karachi', lat: 24.86, lng: 67.01, population: 17.6, density: 11.1, hub: 'global' },
+  { name: 'Bangkok', lat: 13.75, lng: 100.52, population: 11.2, density: 8.0, hub: 'regional' },
+  { name: 'Singapore', lat: 1.35, lng: 103.82, population: 6.0, density: 12.2, hub: 'global' },
+  { name: 'Jakarta', lat: -6.21, lng: 106.85, population: 33.4, density: 12.6, hub: 'global' },
+  { name: 'Manila', lat: 14.6, lng: 120.98, population: 24.9, density: 13.0, hub: 'global' },
+  { name: 'Ho Chi Minh City', lat: 10.82, lng: 106.63, population: 9.7, density: 8.6, hub: 'regional' },
+  { name: 'Tokyo', lat: 35.68, lng: 139.69, population: 37.2, density: 13.0, hub: 'global' },
+  { name: 'Seoul', lat: 37.57, lng: 126.98, population: 25.2, density: 12.4, hub: 'global' },
+  { name: 'Shanghai', lat: 31.23, lng: 121.47, population: 29.2, density: 12.0, hub: 'global' },
+  { name: 'Beijing', lat: 39.91, lng: 116.4, population: 22.2, density: 9.4, hub: 'global' },
+  { name: 'Guangzhou', lat: 23.13, lng: 113.26, population: 27.1, density: 11.2, hub: 'global' },
+  { name: 'Shenzhen', lat: 22.54, lng: 114.06, population: 17.8, density: 12.5, hub: 'global' },
+  { name: 'Hong Kong', lat: 22.4, lng: 114.11, population: 7.5, density: 12.7, hub: 'global' },
+  { name: 'Taipei', lat: 25.05, lng: 121.56, population: 7.0, density: 9.2, hub: 'regional' },
+  { name: 'Sydney', lat: -33.87, lng: 151.21, population: 5.4, density: 4.3, hub: 'regional' },
+  { name: 'Melbourne', lat: -37.81, lng: 144.96, population: 5.3, density: 4.1, hub: 'regional' },
 ]
 
-// Tier → visual properties
-const TIER_CONFIG = {
-  1: { count: 4, radius: 0.38, scatter: 0.20 },  // major hubs: bright cluster
-  2: { count: 2, radius: 0.22, scatter: 0.15 },  // regional: small pair
-  3: { count: 1, radius: 0.15, scatter: 0     },  // secondary: single clean dot
-} as const
+const ROUTES: Array<[string, string]> = [
+  ['New York', 'London'],
+  ['London', 'Paris'],
+  ['Paris', 'Dubai'],
+  ['Dubai', 'Mumbai'],
+  ['Mumbai', 'Singapore'],
+  ['Singapore', 'Tokyo'],
+  ['Singapore', 'Sydney'],
+  ['Shanghai', 'Los Angeles'],
+  ['Tokyo', 'Los Angeles'],
+  ['Mexico City', 'Sao Paulo'],
+  ['London', 'Lagos'],
+  ['Cairo', 'Dubai'],
+]
 
-// Palette: bright blue + ice white — no random noise colors
-const TIER_COLORS = {
-  1: ['#0078ff', '#00e5ff', '#0078ff', '#38bdf8'],
-  2: ['#0078ff', '#38bdf8'],
-  3: ['#38bdf8'],
-} as const
+const LIGHT_COLORS = ['#f8fbff', '#94e8ff', '#12b7ff', '#0078ff', '#ffb86c', '#ff7a3d'] as const
 
-const NODES = CITIES.flatMap(([lat, lng, tier]) => {
-  const { count, radius, scatter } = TIER_CONFIG[tier as 1 | 2 | 3]
-  const colors = TIER_COLORS[tier as 1 | 2 | 3]
-  return Array.from({ length: count }, (_, i) => ({
-    lat: lat + (Math.random() - 0.5) * scatter,
-    lng: lng + (Math.random() - 0.5) * scatter,
-    color: colors[i % colors.length],
-    radius,
-  }))
+function hashValue(seed: string): number {
+  let hash = 2166136261
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+
+  return (hash >>> 0) / 4294967295
+}
+
+function nodeCountFor(cluster: PopulationCluster): number {
+  const hubBoost = cluster.hub === 'global' ? 1.65 : cluster.hub === 'regional' ? 1.1 : 0.75
+  return Math.round((cluster.population * 0.8 + cluster.density * 2.4) * hubBoost)
+}
+
+function nodeRadiusFor(cluster: PopulationCluster, index: number): number {
+  if (index === 0) {
+    return cluster.hub === 'global' ? 0.34 : 0.24
+  }
+
+  const scale = cluster.hub === 'global' ? 0.075 : 0.055
+  return 0.025 + hashValue(`${cluster.name}-radius-${index}`) * scale
+}
+
+function nodeColorFor(cluster: PopulationCluster, index: number): string {
+  if (index === 0) {
+    return cluster.hub === 'global' ? '#00d9ff' : '#f8fbff'
+  }
+
+  const warmBias = cluster.density > 10 && index % 5 === 0
+  if (warmBias) {
+    return index % 2 === 0 ? '#ffb86c' : '#ff7a3d'
+  }
+
+  return LIGHT_COLORS[Math.floor(hashValue(`${cluster.name}-color-${index}`) * LIGHT_COLORS.length)]
+}
+
+function buildClusterNodes(cluster: PopulationCluster): GlobeNode[] {
+  const count = nodeCountFor(cluster)
+  const scatter = Math.max(0.06, 0.58 - Math.min(cluster.density, 13) * 0.026)
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+
+  return Array.from({ length: count }, (_, index) => {
+    if (index === 0) {
+      return {
+        lat: cluster.lat,
+        lng: cluster.lng,
+        radius: nodeRadiusFor(cluster, index),
+        color: nodeColorFor(cluster, index),
+      }
+    }
+
+    const radial = Math.sqrt((index + 0.5) / count) * scatter
+    const angle = index * goldenAngle + hashValue(`${cluster.name}-angle`) * Math.PI
+    const latOffset = Math.sin(angle) * radial
+    const lngOffset = Math.cos(angle) * radial * Math.max(0.6, Math.cos((cluster.lat * Math.PI) / 180))
+
+    return {
+      lat: cluster.lat + latOffset,
+      lng: cluster.lng + lngOffset,
+      radius: nodeRadiusFor(cluster, index),
+      color: nodeColorFor(cluster, index),
+    }
+  })
+}
+
+const CLUSTER_BY_NAME = new Map(POPULATION_CLUSTERS.map((cluster) => [cluster.name, cluster]))
+
+const NODES = POPULATION_CLUSTERS.flatMap(buildClusterNodes)
+
+const ARCS: GlobeArc[] = ROUTES.flatMap(([startName, endName], index) => {
+  const start = CLUSTER_BY_NAME.get(startName)
+  const end = CLUSTER_BY_NAME.get(endName)
+  if (!start || !end) {
+    return []
+  }
+
+  return {
+    startLat: start.lat,
+    startLng: start.lng,
+    endLat: end.lat,
+    endLng: end.lng,
+    color: index % 3 === 0 ? ['#0078ff44', '#00d9ffcc'] : ['#0078ff33', '#f8fbff99'],
+  }
 })
+
+const RINGS: GlobeRing[] = POPULATION_CLUSTERS.filter((cluster) => cluster.hub === 'global').map((cluster, index) => ({
+  lat: cluster.lat,
+  lng: cluster.lng,
+  color: index % 4 === 0 ? '#ff9f43' : '#00d9ff',
+}))
 
 export default function GlobeScene() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -92,19 +212,31 @@ export default function GlobeScene() {
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
         .backgroundColor('#000000')
         .pointsData(NODES)
-        .pointAltitude(0.01)
+        .pointAltitude(0.002)
         .pointColor('color')
+        .pointResolution(5)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .pointRadius((d: any) => d.radius)
+        .pointRadius((node: any) => node.radius)
+        .arcsData(ARCS)
+        .arcColor('color')
+        .arcAltitude(0.1)
+        .arcStroke(0.22)
+        .arcDashLength(0.52)
+        .arcDashGap(1.7)
+        .arcDashAnimateTime(9000)
+        .ringsData(RINGS)
+        .ringColor('color')
+        .ringMaxRadius(0.7)
+        .ringPropagationSpeed(0.55)
+        .ringRepeatPeriod(3400)
         .showAtmosphere(true)
         .atmosphereColor('#0078ff')
-        .atmosphereAltitude(0.15)
-        .onPointClick(() => router.push('/login'))
+        .atmosphereAltitude(0.18)
+        .onPointClick(() => router.push('/login?mode=enterprise'))
 
       world.controls().autoRotate = true
-      world.controls().autoRotateSpeed = 0.8
+      world.controls().autoRotateSpeed = 0.65
 
-      // Resize globe when container changes size (handles browser zoom)
       ro = new ResizeObserver(() => {
         if (!world) return
         world.width(container.clientWidth)
@@ -115,7 +247,11 @@ export default function GlobeScene() {
 
     return () => {
       ro?.disconnect()
-      try { world?.renderer()?.dispose() } catch { /* ignore */ }
+      try {
+        world?.renderer()?.dispose()
+      } catch {
+        // Ignore renderer cleanup failures during route transitions.
+      }
     }
   }, [router])
 
