@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import type { QaInspection, QaResult } from '@/types/qa'
 
 type RawQaRow = Record<string, unknown>
@@ -72,13 +72,13 @@ function normalizeQaRow(row: RawQaRow): QaInspection {
 }
 
 export async function getQaInspections(): Promise<QaInspection[]> {
-  const initial = await supabase.from('qa_inspections').select('*').order('inspected_at', { ascending: true })
+  const initial = await serverSupabase.from('qa_inspections').select('*').order('inspected_at', { ascending: true })
 
   let data = initial.data
   let error = initial.error
 
   if (error) {
-    const fallback = await supabase.from('qa_inspections').select('*').order('created_at', { ascending: true })
+    const fallback = await serverSupabase.from('qa_inspections').select('*').order('created_at', { ascending: true })
     data = fallback.data
     error = fallback.error
   }

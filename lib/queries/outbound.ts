@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import { getInboundItems, getInboundShipments } from '@/lib/queries/inbound'
 import { getQaInspections } from '@/lib/queries/qa'
 import type {
@@ -342,7 +342,7 @@ function queueStateFrom(shipmentStatus: string, qaResult: QaResult): InboundQueu
 }
 
 async function getTableRows(table: string): Promise<RawRow[]> {
-  const { data, error } = await supabase.from(table).select('*')
+  const { data, error } = await serverSupabase.from(table).select('*')
   if (error) {
     console.error(`Supabase fetch error for ${table}:`, error)
     return []

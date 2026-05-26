@@ -41,6 +41,8 @@ function formatTimelineLabel(timestamp: number): string {
 }
 
 export default function OperationsTrendBoard({ title, description, summary, metrics }: OperationsTrendBoardProps) {
+  void description
+
   const metricSeed = metrics.map((metric, index) => buildSeed(metric.level, index))
   const [points, setPoints] = useState(metricSeed)
   const [timelineEnd, setTimelineEnd] = useState(() => Date.now())

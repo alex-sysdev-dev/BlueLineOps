@@ -64,3 +64,8 @@
 **What was decided:** Use the `public/associates/Employee 1.png` through `Employee 140.png` files as associate thumbnails by deterministic roster order.
 **Why:** The photos are available in the repo, but there is no employee-to-photo mapping file yet. Deterministic assignment makes the grant-review UI look complete without inferring sensitive traits from images.
 **What was rejected:** Matching photos to associates by perceived gender was rejected because gender should not be inferred from appearance.
+
+## 2026-05-26, Server-side operational reads use service role key
+**What was decided:** Add a server-only Supabase client backed by `SUPABASE_SERVICE_ROLE_KEY` and use it for server-rendered operational query modules that power YMS, Pick/Pack, inbound, QA, layouts, operations, and associates.
+**Why:** The browser anon key returned zero rows for the operational and layout tables, while the service role key could read the live Supabase data needed for `/yms/yard` and `/outbound/floor`.
+**What was rejected:** Changing RLS policies or writing mover state to Supabase was rejected because this restore only needs live read access and page-session mover behavior.

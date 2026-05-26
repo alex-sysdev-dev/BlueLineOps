@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import type { FacilityLayout, FacilityLayoutData, FacilityLayoutItem } from '@/types/layout'
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -52,7 +52,7 @@ function normalizeLayoutItem(row: Record<string, unknown>): FacilityLayoutItem {
 }
 
 export async function getFacilityLayoutData(code: string): Promise<FacilityLayoutData> {
-  const layoutResult = await supabase
+  const layoutResult = await serverSupabase
     .from('facility_layouts')
     .select('id, code, name, facility_area, width_units, height_units')
     .eq('code', code)
@@ -68,7 +68,7 @@ export async function getFacilityLayoutData(code: string): Promise<FacilityLayou
     return { layout: null, items: [] }
   }
 
-  const itemsResult = await supabase
+  const itemsResult = await serverSupabase
     .from('facility_layout_items')
     .select('id, layout_id, item_code, item_label, item_type, x, y, w, h, rotation_deg, zone, shape, color, sort_order, metadata')
     .eq('layout_id', layout.id)

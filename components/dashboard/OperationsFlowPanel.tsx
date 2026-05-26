@@ -53,20 +53,6 @@ function metricTone(value: number): string {
   return "Light"
 }
 
-function metricNarrative(label: string, value: number): string {
-  if (label === "Order Load") {
-    return value >= 70 ? "Backlog is stacking across the floor." : "Backlog is moving at a controllable pace."
-  }
-  if (label === "CPT Exposure") {
-    return value >= 68 ? "Shipping windows need close attention." : "CPT risk is inside a manageable band."
-  }
-  if (label === "Flow Efficiency") {
-    return value >= 68 ? "Labor and throughput are landing cleanly." : "Flow has room to tighten up."
-  }
-
-  return value >= 68 ? "Dock and yard capacity are running hot." : "Capacity is available for the next wave."
-}
-
 function formatTimelineLabel(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -81,6 +67,8 @@ export default function OperationsFlowPanel({
   modeLabel,
   modeSummary,
 }: OperationsFlowPanelProps) {
+  void description
+
   const initialSeed = seed.length > 0 ? seed : [{ backlog: 56, cpt: 34, flow: 62, capacity: 48 }]
   const [points, setPoints] = useState<OperationsFlowPoint[]>(initialSeed)
   const [timelineEnd, setTimelineEnd] = useState(() => Date.now())
