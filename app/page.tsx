@@ -44,7 +44,7 @@ export default function LandingPage() {
             <OperationsTrendBoard
               title="Live Updates"
               description="Live Operating KPIs"
-              summary="BlueLineOps Operational Intelligence built for Logistics, e-commerce, and 3PL teams."
+              summary=""
               metrics={[
                 {
                   label: "Order Volume",
