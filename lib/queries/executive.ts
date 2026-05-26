@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import type {
   ExecutiveCptRiskOrder,
   ExecutiveKpiForecastRow,
@@ -8,7 +8,7 @@ import type {
 } from '@/types/executive'
 
 export async function getExecutiveKpiSnapshot(): Promise<ExecutiveKpiSnapshot | null> {
-  const { data, error } = await supabase.from('executive_kpi_snapshot').select('*').maybeSingle()
+  const { data, error } = await serverSupabase.from('executive_kpi_snapshot').select('*').maybeSingle()
 
   if (error) {
     console.error('Executive KPI snapshot fetch error:', error)
@@ -19,7 +19,7 @@ export async function getExecutiveKpiSnapshot(): Promise<ExecutiveKpiSnapshot | 
 }
 
 export async function getExecutiveKpiMaxLines(limit = 24): Promise<ExecutiveKpiMaxLineRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('executive_kpi_max_lines')
     .select('bucket_at, active_orders_max, cpt_risk_orders_max, safety_incidents_30d_max')
     .order('bucket_at', { ascending: false })
@@ -34,7 +34,7 @@ export async function getExecutiveKpiMaxLines(limit = 24): Promise<ExecutiveKpiM
 }
 
 export async function getExecutiveCptRiskOrders(limit = 8): Promise<ExecutiveCptRiskOrder[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('order_cpt_risk')
     .select(
       'order_id, order_number, status, cpt_at, cpt_window_label, minutes_to_cpt, hours_to_cpt, order_age_hours, lifecycle_stage, risk_bucket, is_deadlined'
@@ -85,7 +85,7 @@ async function getExecutiveHistoryRows(
   table: 'executive_kpi_history_hourly' | 'executive_kpi_history_daily',
   limit: number
 ): Promise<ExecutiveKpiHistoryRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from(table)
     .select(HISTORY_SELECT)
     .order('bucket_at', { ascending: false })
@@ -108,7 +108,7 @@ export async function getExecutiveKpiHistoryDaily(limit = 14): Promise<Executive
 }
 
 export async function getExecutiveKpiForecastDaily(limit = 14): Promise<ExecutiveKpiForecastRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('executive_kpi_forecast_daily')
     .select(
       'forecast_date, active_orders_forecast, cpt_risk_orders_forecast, throughput_per_hour_forecast, active_orders_low, active_orders_high, cpt_risk_orders_low, cpt_risk_orders_high, throughput_per_hour_low, throughput_per_hour_high, forecast_method'

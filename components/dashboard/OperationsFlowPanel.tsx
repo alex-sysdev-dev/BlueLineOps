@@ -19,7 +19,7 @@ type OperationsFlowPanelProps = {
 
 const SERIES = [
   { key: "backlog", label: "Order Load", color: "#38bdf8" },
-  { key: "cpt", label: "CPT Exposure", color: "#fb7185" },
+  { key: "cpt", label: "CPT Risk", color: "#fb7185" },
   { key: "flow", label: "Flow Efficiency", color: "#34d399" },
   { key: "capacity", label: "Capacity Load", color: "#f59e0b" },
 ] as const

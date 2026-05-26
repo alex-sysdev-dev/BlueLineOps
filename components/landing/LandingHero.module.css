@@ -1,0 +1,56 @@
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes nodePulse {
+  0%   { r: 3;  stroke-opacity: 0.55; }
+  70%  { r: 22; stroke-opacity: 0; }
+  100% { r: 3;  stroke-opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Named animation classes ─────────────────────────────────────────────── */
+.nodeRing {
+  animation: nodePulse 3s ease-out infinite;
+  animation-delay: var(--node-delay, 0s);
+}
+
+.nodeDot {
+  filter: drop-shadow(0 0 5px var(--node-color, #38bdf8));
+}
+
+.floatLogo {
+  animation: floatY 4s ease-in-out infinite;
+}
+
+.shimmerLayer {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(148, 197, 255, 0.13) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* ── Fade-up entry with delay variants ───────────────────────────────────── */
+.fadeUp {
+  animation: fadeUp 0.55s both;
+}
+.d000 { animation-delay: 0s; }
+.d005 { animation-delay: 0.05s; }
+.d015 { animation-delay: 0.15s; }
+.d030 { animation-delay: 0.30s; }
+.d035 { animation-delay: 0.35s; }
+.d045 { animation-delay: 0.45s; }
+.d050 { animation-delay: 0.50s; }
+.d060 { animation-delay: 0.60s; }
