@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import { getInboundItems } from '@/lib/queries/inbound'
 import { getInboundQaQueue, getInventoryView } from '@/lib/queries/outbound'
 import { getYmsDashboardData } from '@/lib/queries/yms'
@@ -40,7 +40,7 @@ function normalizeDockType(value: string | null | undefined): 'outbound' | 'inbo
 
 async function getFirstOpenTaskCount(tableNames: string[]): Promise<number | null> {
   for (const tableName of tableNames) {
-    const result = await supabase.from(tableName).select('status')
+    const result = await serverSupabase.from(tableName).select('status')
     if (result.error) {
       continue
     }

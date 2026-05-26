@@ -37,8 +37,12 @@ function formatTimeLabel(value: string): string {
 }
 
 function formatDelta(current: number | null | undefined, previous: number | null | undefined, suffix = ''): string {
-  if (current === null || current === undefined || previous === null || previous === undefined) {
-    return 'N/A'
+  if (current === null || current === undefined) {
+    return `0.0${suffix}`
+  }
+
+  if (previous === null || previous === undefined) {
+    return `${current.toFixed(1)}${suffix}`
   }
 
   const delta = current - previous
@@ -101,12 +105,10 @@ export default async function Page() {
   const latestHourly = latest(hourlyHistory)
   const previousHourly = previous(hourlyHistory)
   const nextForecast = forecastRows[0] ?? null
-  const nextForecastThroughput =
-    nextForecast?.throughput_per_hour_forecast !== null && nextForecast?.throughput_per_hour_forecast !== undefined
-      ? nextForecast.throughput_per_hour_forecast.toFixed(2)
-      : 'N/A'
+  const nextOrderForecast = nextForecast?.active_orders_forecast ?? snapshot?.active_orders ?? 0
+  const nextCptForecast = nextForecast?.cpt_risk_orders_forecast ?? snapshot?.cpt_risk_orders ?? 0
 
-  const signalTiles = [
+  const forecastTiles = [
     {
       title: 'Throughput Delta',
       value: formatDelta(latestHourly?.throughput_per_hour_avg, previousHourly?.throughput_per_hour_avg),
@@ -119,12 +121,12 @@ export default async function Page() {
     },
     {
       title: 'Tomorrow Orders',
-      value: nextForecast?.active_orders_forecast ?? 'N/A',
+      value: nextOrderForecast,
       accent: 'text-blue-100 group-hover:text-blue-50',
     },
     {
       title: 'Tomorrow CPT Risk',
-      value: nextForecast?.cpt_risk_orders_forecast ?? 'N/A',
+      value: nextCptForecast,
       accent: 'text-rose-100 group-hover:text-rose-50',
     },
   ]
@@ -211,7 +213,7 @@ export default async function Page() {
             <span className="text-[var(--foreground)]">Trend Intelligence</span>
           </h1>
           <p className="mt-2 max-w-3xl text-zinc-400">
-            This page now combines hourly pressure, daily history, and a 14-day operational forecast from the Supabase history backfill and forecast view.
+            14-day outlook combining intraday history, daily actuals, and forward forecast.
           </p>
         </div>
 
@@ -222,15 +224,15 @@ export default async function Page() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {signalTiles.map((tile) => (
+        {forecastTiles.map((tile) => (
           <KpiTile key={tile.title} title={tile.title} value={tile.value} accent={tile.accent} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.7fr_1fr] gap-6">
         <LineCharts
-          title="Hourly Pressure Signals"
-          description="Rolling hourly pressure lines for active orders, CPT risk, and safety. These are max-line series from the executive history views."
+          title="CPT Risk"
+          description="Rolling hourly history lines for active orders, CPT risk, and safety. These are max-line series from the executive history views."
           labels={maxLineLabels}
           series={maxLineSeries}
         />
@@ -268,50 +270,13 @@ export default async function Page() {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <LineCharts
           title="14-Day Forecast Outlook"
           description="Daily forecast for active orders, CPT risk, and throughput per hour from public.executive_kpi_forecast_daily."
           labels={forecastLabels}
           series={forecastSeries}
         />
-
-        <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
-          <h2 className="text-xl font-semibold text-zinc-100">Tomorrow Outlook</h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            Forecast baseline for the next operating day.
-          </p>
-
-          <div className="mt-5 grid grid-cols-1 gap-4">
-            <div className="rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Active Orders</div>
-              <div className="mt-2 text-2xl font-semibold text-zinc-100">{nextForecast?.active_orders_forecast ?? 'N/A'}</div>
-              <div className="mt-1 text-xs text-zinc-400">
-                Range {nextForecast?.active_orders_low ?? 'N/A'} - {nextForecast?.active_orders_high ?? 'N/A'}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">CPT Risk Orders</div>
-              <div className="mt-2 text-2xl font-semibold text-zinc-100">{nextForecast?.cpt_risk_orders_forecast ?? 'N/A'}</div>
-              <div className="mt-1 text-xs text-zinc-400">
-                Range {nextForecast?.cpt_risk_orders_low ?? 'N/A'} - {nextForecast?.cpt_risk_orders_high ?? 'N/A'}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Throughput / Hr</div>
-              <div className="mt-2 text-2xl font-semibold text-zinc-100">{nextForecastThroughput}</div>
-              <div className="mt-1 text-xs text-zinc-400">
-                Range {nextForecast?.throughput_per_hour_low?.toFixed(2) ?? 'N/A'} - {nextForecast?.throughput_per_hour_high?.toFixed(2) ?? 'N/A'}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-dashed border-zinc-700/60 bg-zinc-900/30 p-4 text-sm text-zinc-400">
-              Method: {nextForecast?.forecast_method ?? 'N/A'}
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   )

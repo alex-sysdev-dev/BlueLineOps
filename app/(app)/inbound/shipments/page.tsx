@@ -1,6 +1,6 @@
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import DataTable, { type Column } from '@/components/tables/DataTable'
 import { buildInboundStatusTrend, buildSupplierVolume } from '@/lib/calculations/inbound'
 import { getInboundItems, getInboundShipments } from '@/lib/queries/inbound'
@@ -34,11 +34,11 @@ export default async function InboundShipmentsPage() {
         <span className="text-[var(--foreground)]">Shipments</span>
       </h1>
 
-      <SignalPulseBoard
+      <OperationsTrendBoard
         title="Shipment Lane"
         description="View of scheduled appointments, arrivals at dock, receipt completion, and supplier throughput concentration."
         summary="Inbound Tracker"
-        signals={[
+        metrics={[
           {
             label: 'Scheduled',
             color: '#38bdf8',

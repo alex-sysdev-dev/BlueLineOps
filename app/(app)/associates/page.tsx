@@ -1,6 +1,8 @@
 import BarChart from '@/components/charts/BarChart'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import KpiTile from '@/components/kpi/KpiTile'
+import AssociatesTable from '@/components/associates/AssociatesTable'
+import { buildAssociateDirectoryRows, generateMockData, normalizePerformanceNames, synthesizePerformanceRows } from '@/lib/calculations/associates'
 import { getAssociateCurrentPerformance, getAssociateSkillMatrix } from '@/lib/queries/associates'
 import type { AssociatePerformanceRow, AssociateSkillEntry, AssociateSkillMatrixRow } from '@/types/associates'
 
@@ -88,12 +90,26 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export default async function AssociatesPage() {
-  const [matrixRows, performanceRows] = await Promise.all([
+  const [rawMatrixRows, rawPerformanceRows] = await Promise.all([
     getAssociateSkillMatrix(),
     getAssociateCurrentPerformance(),
   ])
 
+  let matrixRows = rawMatrixRows
+  let performanceRows = rawPerformanceRows
+
+  if (matrixRows.length === 0 && performanceRows.length === 0) {
+    const mock = generateMockData()
+    matrixRows = mock.matrixRows
+    performanceRows = mock.performanceRows
+  } else if (performanceRows.length === 0) {
+    performanceRows = synthesizePerformanceRows(matrixRows)
+  } else {
+    performanceRows = normalizePerformanceNames(performanceRows)
+  }
+
   const workforce = summarizeWorkforce(matrixRows, performanceRows)
+  const directoryRows = buildAssociateDirectoryRows(matrixRows, performanceRows)
   const topRows = topPerformers(performanceRows)
   const riskRows = atRiskPerformers(performanceRows)
   const trackedRate = workforce.totalAssociates > 0 ? Number(((workforce.trackedAssociates / workforce.totalAssociates) * 100).toFixed(1)) : 0
@@ -130,7 +146,7 @@ export default async function AssociatesPage() {
 
         <div className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.92),rgba(15,23,42,0.84))] px-5 py-4 text-sm text-zinc-300">
           <div className="text-zinc-400">Performance basis</div>
-          <div className="mt-1 font-semibold text-zinc-100">Output Tracker</div>
+          <div className="mt-1 font-semibold text-zinc-100">Current-day UPH</div>
         </div>
       </header>
 
@@ -143,11 +159,11 @@ export default async function AssociatesPage() {
         <KpiTile title="Clamp Cert" value={workforce.clampCertified} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
 
-      <SignalPulseBoard
+      <OperationsTrendBoard
         title="Associate Performance"
-        description="Total Hourly Workforce Tracker."
-        summary="Associate Performance"
-        signals={[
+        description="Current workforce coverage, target attainment, and certification depth."
+        summary="Workforce readiness by active roster and current-day output."
+        metrics={[
           {
             label: 'Tracked Output',
             color: '#38bdf8',
@@ -178,6 +194,8 @@ export default async function AssociatesPage() {
           },
         ]}
       />
+
+      <AssociatesTable rows={directoryRows} />
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_1fr] gap-6">
         <div className="space-y-6">
@@ -219,15 +237,15 @@ export default async function AssociatesPage() {
                     <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-zinc-300">
                       <div>
                         <div className="text-zinc-500">UPH</div>
-                        <div className="mt-1 font-semibold text-zinc-100">{row.uph?.toFixed(1) ?? 'N/A'}</div>
+                        <div className="mt-1 font-semibold text-zinc-100">{row.uph?.toFixed(1) ?? 'Pending'}</div>
                       </div>
                       <div>
                         <div className="text-zinc-500">Target</div>
-                        <div className="mt-1 font-semibold text-zinc-100">{row.target_uph?.toFixed(1) ?? 'N/A'}</div>
+                        <div className="mt-1 font-semibold text-zinc-100">{row.target_uph?.toFixed(1) ?? 'Pending'}</div>
                       </div>
                       <div>
                         <div className="text-zinc-500">Variance</div>
-                        <div className="mt-1 font-semibold text-zinc-100">{row.variance_to_target?.toFixed(1) ?? 'N/A'}</div>
+                        <div className="mt-1 font-semibold text-zinc-100">{row.variance_to_target?.toFixed(1) ?? 'Pending'}</div>
                       </div>
                     </div>
                   </article>
@@ -264,15 +282,15 @@ export default async function AssociatesPage() {
                   <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-zinc-300">
                     <div>
                       <div className="text-zinc-500">UPH</div>
-                      <div className="mt-1 font-semibold text-zinc-100">{row.uph?.toFixed(1) ?? 'N/A'}</div>
+                      <div className="mt-1 font-semibold text-zinc-100">{row.uph?.toFixed(1) ?? 'Pending'}</div>
                     </div>
                     <div>
                       <div className="text-zinc-500">Target</div>
-                      <div className="mt-1 font-semibold text-zinc-100">{row.target_uph?.toFixed(1) ?? 'N/A'}</div>
+                      <div className="mt-1 font-semibold text-zinc-100">{row.target_uph?.toFixed(1) ?? 'Pending'}</div>
                     </div>
                     <div>
                       <div className="text-zinc-500">Variance</div>
-                      <div className="mt-1 font-semibold text-zinc-100">{row.variance_to_target?.toFixed(1) ?? 'N/A'}</div>
+                      <div className="mt-1 font-semibold text-zinc-100">{row.variance_to_target?.toFixed(1) ?? 'Pending'}</div>
                     </div>
                   </div>
                 </article>

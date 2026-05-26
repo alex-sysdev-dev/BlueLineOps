@@ -1,6 +1,6 @@
 import Image from "next/image"
 import LandingKpiTile from "@/components/landing/LandingKpiTile"
-import SignalPulseBoard from "@/components/dashboard/SignalPulseBoard"
+import OperationsTrendBoard from "@/components/dashboard/OperationsTrendBoard"
 
 export default function LandingPage() {
   return (
@@ -29,7 +29,6 @@ export default function LandingPage() {
               Operational Intelligence for Logistics
             </p>
             <p className="mx-auto mt-4 max-w-xl text-base text-zinc-400 xl:max-w-2xl">
-              Live Agent Coming soon 
             </p>
 
             <div className="mx-auto mt-12 w-full max-w-md">
@@ -42,11 +41,11 @@ export default function LandingPage() {
           </div>
 
           <div className="w-full">
-            <SignalPulseBoard
+            <OperationsTrendBoard
               title="Live Updates"
               description="Live Operating KPIs"
               summary="BlueLineOps Operational Intelligence built for Logistics, e-commerce, and 3PL teams."
-              signals={[
+              metrics={[
                 {
                   label: "Order Volume",
                   color: "#38bdf8",

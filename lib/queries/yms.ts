@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import type {
   OrderRow,
   TrailerRow,
@@ -74,12 +74,12 @@ function chooseLatestOrder(current: OrderRow | undefined, next: OrderRow): Order
 
 export async function getYmsDashboardData(): Promise<YmsDashboardData> {
   const [warehousesResult, trailersResult, ordersResult, yardSpotsResult] = await Promise.all([
-    supabase.from('warehouses').select('id, name, location, square_feet, created_at'),
-    supabase
+    serverSupabase.from('warehouses').select('id, name, location, square_feet, created_at'),
+    serverSupabase
       .from('trailers')
       .select('id, trailer_number, carrier, warehouse_id, current_spot_id, status, arrived_at, departed_at'),
-    supabase.from('orders').select('id, order_number, client_name, status, order_date, yard_spots_id, trailer_id'),
-    supabase.from('yard_spots').select('id, spot_label, warehouse_id, type'),
+    serverSupabase.from('orders').select('id, order_number, client_name, status, order_date, yard_spots_id, trailer_id'),
+    serverSupabase.from('yard_spots').select('id, spot_label, warehouse_id, type'),
   ])
 
   if (warehousesResult.error) {

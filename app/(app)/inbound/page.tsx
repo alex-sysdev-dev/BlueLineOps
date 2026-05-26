@@ -3,7 +3,7 @@ import { buildInboundStatusTrend, buildSupplierVolume } from '@/lib/calculations
 import { calculateInboundKpis } from '@/lib/calculations/kpi'
 import { getCrossFunctionalKpis, getDockDoorCounts, getPutawayTasksCount } from '@/lib/queries/operations'
 import KpiTile from '@/components/kpi/KpiTile'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import DataTable, { type Column } from '@/components/tables/DataTable'
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
@@ -56,13 +56,13 @@ export default async function InboundPage() {
         <KpiTile title="Putaway Tasks" value={putawayTasks} accent="text-emerald-100 group-hover:text-emerald-50" />
       </div>
 
-      <SignalPulseBoard
-        title="Inbound Flow Pulse"
-        description="Scheduled Loads."
-        summary="Inbound Tracker."
-        signals={[
+      <OperationsTrendBoard
+        title="Inbound Receiving Flow"
+        description="Scheduled inbound appointments and receiving conversion."
+        summary="Inbound receiving status."
+        metrics={[
           {
-            label: 'Schedule Load',
+            label: 'Scheduled Appointments',
             color: '#38bdf8',
             level: clamp(kpis.scheduled * 7, 8, 96),
             displayValue: `${kpis.scheduled}`,
@@ -83,7 +83,7 @@ export default async function InboundPage() {
             note: 'Inbound loads fully converted into received inventory state.',
           },
           {
-            label: 'QA Friction',
+            label: 'QA Exceptions',
             color: '#fb7185',
             level: clamp(qaRate || (crossKpis.inboundQaPending + crossKpis.inboundQaBlocked) * 6, 8, 96),
             displayValue: `${crossKpis.inboundQaPending + crossKpis.inboundQaBlocked}`,

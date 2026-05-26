@@ -54,3 +54,18 @@
 **What was decided:** Create `F:\alex-sysdev-dev\BlueLineOps\.env.local` from `.env.example` without adding secrets.
 **Why:** The F drive checkout was missing `.env.local`, and no C: or D: checkout contained BlueLineOps secrets to copy. The app still needs real Supabase and OpenAI values before local runtime is fully configured.
 **What was rejected:** Inventing keys, copying ChatterBot secrets, or overwriting an existing env file was rejected because those would create invalid or cross-project configuration.
+
+## 2026-05-25, Grant review proposal branch uses live data plus local interactive demos
+**What was decided:** Prepare the `Proposal` branch with production-readiness UI cleanup, interactive Associates, Pick/Pack, and YMS workflows, while keeping Supabase reads intact and using local client state for demo move actions.
+**Why:** Grant reviewers need credible operator workflows without risking database schema changes or writing demo move events into production data before Alexander approves that direction.
+**What was rejected:** Renaming database tables, adding write-side Supabase mutations, or redesigning the whole app was rejected because the task requires scoped grant-review polish without breaking existing working routes.
+
+## 2026-05-25, Associate PNG photos map by roster order
+**What was decided:** Use the `public/associates/Employee 1.png` through `Employee 140.png` files as associate thumbnails by deterministic roster order.
+**Why:** The photos are available in the repo, but there is no employee-to-photo mapping file yet. Deterministic assignment makes the grant-review UI look complete without inferring sensitive traits from images.
+**What was rejected:** Matching photos to associates by perceived gender was rejected because gender should not be inferred from appearance.
+
+## 2026-05-26, Server-side operational reads use service role key
+**What was decided:** Add a server-only Supabase client backed by `SUPABASE_SERVICE_ROLE_KEY` and use it for server-rendered operational query modules that power YMS, Pick/Pack, inbound, QA, layouts, operations, and associates.
+**Why:** The browser anon key returned zero rows for the operational and layout tables, while the service role key could read the live Supabase data needed for `/yms/yard` and `/outbound/floor`.
+**What was rejected:** Changing RLS policies or writing mover state to Supabase was rejected because this restore only needs live read access and page-session mover behavior.

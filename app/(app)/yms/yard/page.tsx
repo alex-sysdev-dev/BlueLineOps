@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import KpiTile from '@/components/kpi/KpiTile'
 import YardLayoutPlan from '@/components/yard/YardLayoutPlan'
+import YardMoveBoard from '@/components/yard/YardMoveBoard'
 import type { NormalizedYardSpot, YardSpotStatus } from '@/types/yms'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
@@ -52,7 +53,7 @@ function statusLabel(status: YardSpotStatus): string {
 
 function formatDate(value?: string): string {
   if (!value) {
-    return 'N/A'
+    return 'Open'
   }
 
   const parsed = new Date(value)
@@ -101,7 +102,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export default async function YmsYardPage() {
-  const [{ yardSpots: yardSpotRows, orders }, layoutData] = await Promise.all([
+  const [{ yardSpots: yardSpotRows, trailers, orders }, layoutData] = await Promise.all([
     getYmsDashboardData(),
     getFacilityLayoutData('yard_main'),
   ])
@@ -111,7 +112,7 @@ export default async function YmsYardPage() {
   const occupancyRate = summary.total > 0 ? Number(((summary.occupied / summary.total) * 100).toFixed(1)) : 0
   const reservedRate = summary.total > 0 ? Number(((summary.reserved / summary.total) * 100).toFixed(1)) : 0
   const blockedRate = summary.total > 0 ? Number((((summary.blocked + summary.maintenance) / summary.total) * 100).toFixed(1)) : 0
-  const orderPressure = clamp(openOrders * 6, 8, 96)
+  const orderDemand = clamp(openOrders * 6, 8, 96)
 
   const spotMetaById = new Map(
     yardSpotRows.map((spot) => [
@@ -157,11 +158,11 @@ export default async function YmsYardPage() {
         <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
 
-      <SignalPulseBoard
-        title="Yard Execution Pulse"
-        description="Rolling execution view for occupied capacity, reserved positions, blocked dock pressure, and order demand across the yard."
-        summary="The yard map stays static for spatial clarity; this pulse layer keeps the page visibly active and operational."
-        signals={[
+      <OperationsTrendBoard
+        title="Yard Execution Flow"
+        description="Rolling execution view for occupied capacity, reserved positions, blocked dock capacity, and order demand across the yard."
+        summary="The yard map stays static for spatial clarity; this Flow layer keeps the page visibly active and operational."
+        metrics={[
           {
             label: 'Occupied Capacity',
             color: '#38bdf8',
@@ -177,7 +178,7 @@ export default async function YmsYardPage() {
             note: 'Spots already committed to expected trailer moves or planned assignments.',
           },
           {
-            label: 'Blocked Pressure',
+            label: 'Blocked Capacity',
             color: '#fb7185',
             level: blockedRate,
             displayValue: `${summary.blocked + summary.maintenance}`,
@@ -186,7 +187,7 @@ export default async function YmsYardPage() {
           {
             label: 'Order Demand',
             color: '#34d399',
-            level: orderPressure,
+            level: orderDemand,
             displayValue: `${openOrders}`,
             note: 'Open order volume currently leaning on dock and yard execution.',
           },
@@ -196,6 +197,8 @@ export default async function YmsYardPage() {
       {layoutData.layout && layoutData.items.length > 0 ? (
         <YardLayoutPlan layoutData={layoutData} yardSpots={yardSpotRows} />
       ) : null}
+
+      <YardMoveBoard spots={yardSpots} trailers={trailers} orders={orders} />
 
       {groupedSpots.map(({ dockGroup, spots }) => {
         const title = DOCK_GROUP_LABEL[dockGroup]
@@ -275,9 +278,9 @@ export default async function YmsYardPage() {
                           <td className="px-4 py-3">{spot.label}</td>
                           <td className="px-4 py-3">{spot.zone}</td>
                           <td className="px-4 py-3">{statusLabel(spot.status)}</td>
-                          <td className="px-4 py-3">{spot.trailerId ?? 'N/A'}</td>
+                          <td className="px-4 py-3">{spot.trailerId ?? 'Open'}</td>
                           <td className="px-4 py-3">{spotMetaById.get(spot.id)?.activeOrders ?? 0}</td>
-                          <td className="px-4 py-3">{spot.carrier ?? 'N/A'}</td>
+                          <td className="px-4 py-3">{spot.carrier ?? 'Open'}</td>
                           <td className="px-4 py-3">{formatDate(spot.updatedAt)}</td>
                         </tr>
                       ))}

@@ -1,5 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import PickPackFloorPlan from '@/components/outbound/PickPackFloorPlan'
 import PickPackMap from '@/components/floor/PickPackMap'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@/lib/calculations/outbound'
 import { getOutboundFloorData } from '@/lib/queries/outbound'
 import { getFacilityLayoutData } from '@/lib/queries/layouts'
+import { getAssociateCurrentPerformance } from '@/lib/queries/associates'
 import type { PackStationStatus } from '@/types/outbound'
 
 function stationStatusBadge(status: PackStationStatus): string {
@@ -44,9 +45,10 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export default async function PickPackFloorView() {
-  const [data, layoutData] = await Promise.all([
+  const [data, layoutData, associates] = await Promise.all([
     getOutboundFloorData(),
     getFacilityLayoutData('pick_pack_main'),
+    getAssociateCurrentPerformance(),
   ])
   const floorKpis = calculateOutboundFloorKpis(data)
   const throughputUph = calculateThroughputUph(data.tasks)
@@ -74,11 +76,11 @@ export default async function PickPackFloorView() {
         <KpiTile title="Avg. Utilization" value={floorKpis.avgUtilization} suffix="%" accent="text-blue-100 group-hover:text-blue-50" />
       </div>
 
-      <SignalPulseBoard
-        title="Floor Execution Pulse"
-        description="Continuous live view of throughput, backlog, station engagement, and lateness pressure across the pick and pack floor."
-        summary="This pulse keeps the floor page visibly active while the map stays readable and spatially stable."
-        signals={[
+      <OperationsTrendBoard
+        title="Floor Execution Flow"
+        description="Continuous live view of throughput, backlog, station engagement, and late-task exposure across the pick and pack floor."
+        summary="This Flow keeps the floor page visibly active while the map stays readable and spatially stable."
+        metrics={[
           {
             label: 'Throughput',
             color: '#38bdf8',
@@ -87,7 +89,7 @@ export default async function PickPackFloorView() {
             note: 'Recent completed-unit flow translated into hourly pace.',
           },
           {
-            label: 'Backlog Load',
+            label: 'Backlog',
             color: '#f59e0b',
             level: backlogRate,
             displayValue: `${floorKpis.openTasks}`,
@@ -101,17 +103,17 @@ export default async function PickPackFloorView() {
             note: 'Average running utilization across pack stations.',
           },
           {
-            label: 'Late Pressure',
+            label: 'Late Tasks',
             color: '#fb7185',
             level: lateRate,
             displayValue: `${floorKpis.lateTasks}`,
-            note: 'Late-task pressure relative to the current open task pool.',
+            note: 'Late work relative to the current open task pool.',
           },
         ]}
       />
 
       {layoutData.layout && layoutData.items.length > 0 ? (
-        <PickPackFloorPlan layoutData={layoutData} data={data} />
+        <PickPackFloorPlan layoutData={layoutData} data={data} associates={associates} />
       ) : (
         <PickPackMap
           cells={heatCells}

@@ -12,7 +12,7 @@ type Props = {
 export default function FacilityLayoutCanvas({ layout, items, title, description, renderItem }: Props) {
   if (items.length === 0) {
     return (
-      <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(145deg,rgba(2,6,23,0.96),rgba(15,23,42,0.86))] p-6">
+      <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(145deg,rgba(2,6,23,0.96),rgba(15,23,42,0.86))] p-6">
         <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
         <p className="mt-2 text-sm text-zinc-400">{description ?? 'No layout items found yet.'}</p>
       </section>
@@ -20,7 +20,7 @@ export default function FacilityLayoutCanvas({ layout, items, title, description
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(145deg,rgba(2,6,23,0.96),rgba(15,23,42,0.86))] p-6">
+    <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(145deg,rgba(2,6,23,0.96),rgba(15,23,42,0.86))] p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
@@ -33,7 +33,7 @@ export default function FacilityLayoutCanvas({ layout, items, title, description
       </div>
 
       <div
-        className="relative mt-5 overflow-hidden rounded-2xl border border-zinc-700/60 bg-[#d8d8d8]"
+        className="relative mt-5 max-h-[620px] overflow-hidden rounded-2xl border border-zinc-700/60 bg-[#d8d8d8]"
         style={{ aspectRatio: `${layout.width_units} / ${layout.height_units}` }}
       >
         {items.map((item) => (

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import type { AssociatePerformanceRow, AssociateSkillMatrixRow } from '@/types/associates'
 
 function normalizeSkillArray(value: unknown): AssociateSkillMatrixRow['role_skills'] {
@@ -6,7 +6,7 @@ function normalizeSkillArray(value: unknown): AssociateSkillMatrixRow['role_skil
 }
 
 export async function getAssociateSkillMatrix(): Promise<AssociateSkillMatrixRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('associate_skill_matrix')
     .select('associate_id, employee_id, full_name, status, shift, team, role_skills, equipment_skills, attachment_skills')
     .order('full_name', { ascending: true })
@@ -30,7 +30,7 @@ export async function getAssociateSkillMatrix(): Promise<AssociateSkillMatrixRow
 }
 
 export async function getAssociateCurrentPerformance(): Promise<AssociatePerformanceRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('associate_current_performance')
     .select(
       'associate_id, employee_id, full_name, shift, team, skill_id, skill_code, skill_label, performance_date, units_completed, tasks_completed, hours_worked, uph, target_uph, variance_to_target, performance_band'

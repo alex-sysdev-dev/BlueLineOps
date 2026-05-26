@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { serverSupabase } from '@/lib/supabase-server'
 import { InboundItem, Shipment, ShipmentStatus } from '@/types/inbound'
 
 type RawInboundItem = {
@@ -26,7 +26,7 @@ function normalizeShipmentStatus(value: string | null): ShipmentStatus | 'unknow
 }
 
 export async function getInboundShipments(): Promise<Shipment[]> {
-  const { data, error } = await supabase
+  const { data, error } = await serverSupabase
     .from('inbound_shipments')
     .select('*')
     .order('eta', { ascending: true })
@@ -41,8 +41,8 @@ export async function getInboundShipments(): Promise<Shipment[]> {
 
 export async function getInboundItems(): Promise<InboundItem[]> {
   const [{ data: itemRows, error: itemError }, { data: shipmentRows, error: shipmentError }] = await Promise.all([
-    supabase.from('inbound_items').select('id, shipment_id, product_id, expected_qty, received_qty'),
-    supabase.from('inbound_shipments').select('id, supplier, eta, status'),
+    serverSupabase.from('inbound_items').select('id, shipment_id, product_id, expected_qty, received_qty'),
+    serverSupabase.from('inbound_shipments').select('id, supplier, eta, status'),
   ])
 
   if (itemError) {
