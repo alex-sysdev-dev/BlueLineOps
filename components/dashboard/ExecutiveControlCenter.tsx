@@ -1,4 +1,4 @@
-import OperationalPulsePanel, { type OperationalPulsePoint } from '@/components/dashboard/OperationalPulsePanel'
+import OperationsFlowPanel, { type OperationsFlowPoint } from '@/components/dashboard/OperationsFlowPanel'
 import KpiTile from '@/components/kpi/KpiTile'
 import { getExecutiveCptRiskOrders, getExecutiveKpiHistoryHourly, getExecutiveKpiSnapshot } from '@/lib/queries/executive'
 import type { ExecutiveCptRiskOrder, ExecutiveKpiHistoryRow, ExecutiveKpiSnapshot } from '@/types/executive'
@@ -22,16 +22,16 @@ function formatTimestamp(value: string | null | undefined): string {
 }
 
 function formatNumber(value: number | null | undefined): string {
-  return value === null || value === undefined ? 'N/A' : value.toLocaleString()
+  return value === null || value === undefined ? 'Pending' : value.toLocaleString()
 }
 
 function formatPercent(value: number | null | undefined): string {
-  return value === null || value === undefined ? 'N/A' : `${value.toFixed(1)}%`
+  return value === null || value === undefined ? 'Pending' : `${value.toFixed(1)}%`
 }
 
 function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined) {
-    return 'N/A'
+    return 'Pending'
   }
 
   return new Intl.NumberFormat('en-US', {
@@ -43,7 +43,7 @@ function formatCurrency(value: number | null | undefined): string {
 }
 
 function formatHours(value: number | null | undefined): string {
-  return value === null || value === undefined ? 'N/A' : `${value.toFixed(1)}h`
+  return value === null || value === undefined ? 'Pending' : `${value.toFixed(1)}h`
 }
 
 function formatMinutesToCpt(value: number | null | undefined): string {
@@ -62,7 +62,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
 
-function normalizeSignal(values: Array<number | null | undefined>, fallback: number): number[] {
+function normalizeMetric(values: Array<number | null | undefined>, fallback: number): number[] {
   const clean = values.map((value) => (value === null || value === undefined || Number.isNaN(value) ? fallback : value))
 
   if (clean.length === 0) {
@@ -80,7 +80,7 @@ function normalizeSignal(values: Array<number | null | undefined>, fallback: num
   return clean.map((value) => clamp(14 + ((value - min) / (max - min)) * 78, 8, 96))
 }
 
-function signalRange(values: number[]): number {
+function metricRange(values: number[]): number {
   if (values.length === 0) {
     return 0
   }
@@ -88,7 +88,7 @@ function signalRange(values: number[]): number {
   return Math.max(...values) - Math.min(...values)
 }
 
-function buildPulseBase(snapshot: ExecutiveKpiSnapshot | null): OperationalPulsePoint {
+function buildFlowBase(snapshot: ExecutiveKpiSnapshot | null): OperationsFlowPoint {
   const throughput = snapshot?.throughput_per_hour ?? 22
   const productivity = snapshot?.productivity_per_labor_hour ?? 0.92
   const activeOrders = snapshot?.active_orders ?? 118
@@ -104,7 +104,7 @@ function buildPulseBase(snapshot: ExecutiveKpiSnapshot | null): OperationalPulse
   }
 }
 
-function buildSimulatedPulseSeed(base: OperationalPulsePoint, length = 24): OperationalPulsePoint[] {
+function buildSimulatedFlowSeed(base: OperationsFlowPoint, length = 24): OperationsFlowPoint[] {
   return Array.from({ length }, (_, index) => ({
     backlog: clamp(base.backlog + Math.sin(index / 2.2) * 9 + Math.cos(index / 5.1) * 4, 10, 96),
     cpt: clamp(base.cpt + Math.sin((index + 2) / 3) * 7 + Math.cos(index / 4.7) * 3, 8, 94),
@@ -113,30 +113,29 @@ function buildSimulatedPulseSeed(base: OperationalPulsePoint, length = 24): Oper
   }))
 }
 
-function buildOperationalPulse(
+function buildOperationsFlow(
   snapshot: ExecutiveKpiSnapshot | null,
   hourlyHistory: ExecutiveKpiHistoryRow[]
-): { seed: OperationalPulsePoint[]; modeLabel: string; modeSummary: string } {
-  const base = buildPulseBase(snapshot)
+): { seed: OperationsFlowPoint[]; modeLabel: string; modeSummary: string } {
+  const base = buildFlowBase(snapshot)
 
   if (hourlyHistory.length === 0) {
     return {
-      seed: buildSimulatedPulseSeed(base),
-      modeLabel: 'Deterministic Demo Pulse',
-      modeSummary:
-        'No hourly executive history was returned from Supabase, so this panel is running a deterministic control-tower pulse from the current KPI baseline.',
+      seed: buildSimulatedFlowSeed(base),
+      modeLabel: 'Live Flow',
+      modeSummary: 'Running from current KPI snapshot.',
     }
   }
 
-  const backlog = normalizeSignal(
+  const backlog = normalizeMetric(
     hourlyHistory.map((row) => row.active_orders_max ?? row.pending_pick_orders_max ?? row.active_orders_avg),
     snapshot?.active_orders ?? 118
   )
-  const cpt = normalizeSignal(
+  const cpt = normalizeMetric(
     hourlyHistory.map((row) => row.cpt_risk_orders_max ?? row.cpt_risk_orders_avg),
     snapshot?.cpt_risk_orders ?? 6
   )
-  const flow = normalizeSignal(
+  const flow = normalizeMetric(
     hourlyHistory.map((row) => {
       const throughput = row.throughput_per_hour_avg ?? snapshot?.throughput_per_hour ?? 22
       const productivity = row.productivity_per_labor_hour_avg ?? snapshot?.productivity_per_labor_hour ?? 0.92
@@ -144,7 +143,7 @@ function buildOperationalPulse(
     }),
     (snapshot?.throughput_per_hour ?? 22) * 3 + (snapshot?.productivity_per_labor_hour ?? 0.92) * 28
   )
-  const capacity = normalizeSignal(
+  const capacity = normalizeMetric(
     hourlyHistory.map((row) => {
       const yard = row.yard_occupancy_pct_avg ?? snapshot?.yard_occupancy_pct ?? 78
       const dock = row.dock_utilization_pct_avg ?? snapshot?.dock_utilization_pct ?? 64
@@ -161,25 +160,24 @@ function buildOperationalPulse(
   }))
 
   const flattened =
-    signalRange(backlog) < 10 &&
-    signalRange(cpt) < 10 &&
-    signalRange(flow) < 10 &&
-    signalRange(capacity) < 10
+    metricRange(backlog) < 10 &&
+    metricRange(cpt) < 10 &&
+    metricRange(flow) < 10 &&
+    metricRange(capacity) < 10
 
   if (flattened) {
     return {
-      seed: buildSimulatedPulseSeed(seed[seed.length - 1] ?? base),
-      modeLabel: 'Pulse',
-      modeSummary:
-        'Ops Control',
+      seed: buildSimulatedFlowSeed(seed[seed.length - 1] ?? base),
+      modeLabel: 'Live Flow',
+      modeSummary: 'Ops Control',
     }
   }
 
   return {
     seed,
-    modeLabel: 'History-Seeded Pulse',
+    modeLabel: 'History-Seeded Flow',
     modeSummary:
-      'Analtictal Data',
+      'History-based operational readout',
   }
 }
 
@@ -206,28 +204,6 @@ function lifecycleLabel(value: string | null | undefined): string {
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
-}
-
-function buildOperationalBrief(snapshot: ExecutiveKpiSnapshot | null): string[] {
-  if (!snapshot) {
-    return ['Executive snapshot is not available yet. Verify the Supabase views and row-level access.']
-  }
-
-  const brief: string[] = []
-  brief.push(
-    `${formatNumber(snapshot.active_orders)} active orders with ${formatNumber(snapshot.cpt_risk_orders)} currently inside the CPT risk window.`
-  )
-  brief.push(
-    `${formatPercent(snapshot.on_time_ship_pct)} on-time ship performance, ${formatPercent(snapshot.quality_score_pct)} quality, and ${formatNumber(snapshot.deadlined_orders)} deadlined orders.`
-  )
-  brief.push(
-    `${formatPercent(snapshot.yard_occupancy_pct)} yard occupancy and ${formatPercent(snapshot.dock_utilization_pct)} dock utilization are driving the current capacity picture.`
-  )
-  brief.push(
-    `${formatNumber(snapshot.active_labor)} active labor delivering ${formatNumber(snapshot.productivity_per_labor_hour)} completed orders per labor hour.`
-  )
-
-  return brief
 }
 
 function buildWatchlistHeading(riskOrders: ExecutiveCptRiskOrder[]): string {
@@ -268,8 +244,39 @@ export default async function ExecutiveControlCenter() {
     { title: 'Safety', value: formatNumber(snapshot?.safety_incidents_30d), accent: 'text-amber-100 group-hover:text-amber-50' },
   ]
 
-  const operationalBrief = buildOperationalBrief(snapshot)
-  const operationalPulse = buildOperationalPulse(snapshot, hourlyHistory)
+  const OperationsFlow = buildOperationsFlow(snapshot, hourlyHistory)
+  const briefCards = [
+    {
+      label: 'Order Backlog',
+      value: formatNumber(snapshot?.active_orders),
+      detail: `${formatNumber(snapshot?.pending_pick_orders)} pick | ${formatNumber(snapshot?.pending_pack_orders)} pack`,
+      tone: 'border-blue-400/40 bg-blue-500/10',
+    },
+    {
+      label: 'CPT Risk',
+      value: formatNumber(snapshot?.cpt_risk_orders),
+      detail: `${formatNumber(snapshot?.deadlined_orders)} deadlined`,
+      tone: 'border-rose-400/40 bg-rose-500/10',
+    },
+    {
+      label: 'Service Level',
+      value: formatPercent(snapshot?.on_time_ship_pct),
+      detail: `${formatPercent(snapshot?.quality_score_pct)} quality`,
+      tone: 'border-emerald-400/40 bg-emerald-500/10',
+    },
+    {
+      label: 'Capacity',
+      value: formatPercent(snapshot?.yard_occupancy_pct),
+      detail: `${formatPercent(snapshot?.dock_utilization_pct)} dock utilization`,
+      tone: 'border-amber-400/40 bg-amber-500/10',
+    },
+  ]
+  const exceptionRows = [
+    { label: 'Deadlined orders', value: formatNumber(snapshot?.deadlined_orders), owner: 'Outbound lead' },
+    { label: 'CPT watch rows', value: riskOrders.length.toLocaleString(), owner: 'Wave desk' },
+    { label: 'Safety incidents 30d', value: formatNumber(snapshot?.safety_incidents_30d), owner: 'Safety' },
+    { label: 'Trailer dwell', value: formatHours(snapshot?.avg_trailer_dwell_hours), owner: 'Yard lead' },
+  ]
 
   return (
     <div className="space-y-8">
@@ -279,9 +286,6 @@ export default async function ExecutiveControlCenter() {
             <span className="text-blue-500">BlueLineOps</span>{' '}
             <span className="text-[var(--foreground)]">Site Performance</span>
           </h1>
-          <p className="mt-2 max-w-3xl text-zinc-400">
-            Site Performance
-          </p>
         </div>
 
         <div className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.92),rgba(15,23,42,0.84))] px-5 py-4 text-sm text-zinc-300">
@@ -297,26 +301,47 @@ export default async function ExecutiveControlCenter() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.8fr_1fr] gap-6">
-        <OperationalPulsePanel
-          title="Operational Pulse"
-          description="A rolling control-tower signal for the four conversations visitors should immediately understand: order pressure, CPT exposure, labor flow, and facility capacity."
-          seed={operationalPulse.seed}
-          modeLabel={operationalPulse.modeLabel}
-          modeSummary={operationalPulse.modeSummary}
+        <OperationsFlowPanel
+          title="Operational Flow"
+          description=""
+          seed={OperationsFlow.seed}
+          modeLabel={OperationsFlow.modeLabel}
+          modeSummary={OperationsFlow.modeSummary}
         />
 
-        <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
+        <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Operational Brief</h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            Ops Brief
-          </p>
 
-          <div className="mt-5 space-y-3">
-            {operationalBrief.map((entry, index) => (
-              <div key={`brief-${index + 1}`} className="rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4 text-sm text-zinc-200">
-                {entry}
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {briefCards.map((card) => (
+              <div key={card.label} className={`ops-card rounded-xl border p-4 ${card.tone}`}>
+                <div className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-400">{card.label}</div>
+                <div className="mt-2 text-2xl font-semibold text-zinc-100">{card.value}</div>
+                <div className="mt-1 text-xs text-zinc-400">{card.detail}</div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-5 overflow-hidden rounded-xl border border-zinc-700/60">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-zinc-950/40 text-left text-zinc-300">
+                  <th className="px-3 py-2 font-semibold">Exception</th>
+                  <th className="px-3 py-2 font-semibold">Count</th>
+                  <th className="px-3 py-2 font-semibold">Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exceptionRows.map((row) => (
+                  <tr key={row.label} className="border-b border-white/5 text-zinc-200 last:border-0">
+                    <td className="px-3 py-2">{row.label}</td>
+                    <td className="px-3 py-2 font-semibold text-zinc-100">{row.value}</td>
+                    <td className="px-3 py-2 text-zinc-400">{row.owner}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
@@ -327,7 +352,6 @@ export default async function ExecutiveControlCenter() {
             <h2 className="text-xl font-semibold text-zinc-100">CPT Risk Watchlist</h2>
             <p className="mt-1 text-sm text-zinc-400">{buildWatchlistHeading(riskOrders)}</p>
           </div>
-          <div className="text-sm text-zinc-400">Source: `order_cpt_risk`</div>
         </div>
 
         {riskOrders.length === 0 ? (

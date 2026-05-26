@@ -1,5 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
 import { buildStationWorkload, buildTaskFlowTrend, calculateOutboundFloorKpis } from '@/lib/calculations/outbound'
@@ -104,7 +104,7 @@ export default async function PickPackControlTower() {
           <span className="text-blue-500">Outbound</span>{' '}
           <span className="text-[var(--foreground)]">Dashboard</span>
         </h1>
-        <p className="text-zinc-400">Order release, pick execution, station health, and outbound pressure in one view.</p>
+        <p className="text-zinc-400">Order release, pick execution, station health, and outbound workload in one view.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
@@ -119,11 +119,11 @@ export default async function PickPackControlTower() {
         <KpiTile title="Outbound Dock Doors" value={dockDoors.outboundDockDoors} accent="text-blue-100 group-hover:text-blue-50" />
       </div>
 
-      <SignalPulseBoard
+      <OperationsTrendBoard
         title="Outbound Performance"
         description="Outbound metrics"
         summary="Outbound Tracker"
-        signals={[
+        metrics={[
           {
             label: 'Backlog',
             color: '#38bdf8',
@@ -136,7 +136,7 @@ export default async function PickPackControlTower() {
             color: '#fb7185',
             level: lateRate,
             displayValue: `${kpis.lateTasks}`,
-            note: 'Picks not Yet Picked',
+            note: 'Pick work past the planned execution window.',
           },
           {
             label: 'Pick/Pack Station Utilization',
@@ -181,7 +181,7 @@ export default async function PickPackControlTower() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Open Picks</h2>
-          <p className="mt-1 text-sm text-zinc-400">Available Picks</p>
+          <p className="mt-1 text-sm text-zinc-400">Open Pick Work</p>
 
           {data.tasks.length === 0 ? (
             <p className="mt-4 text-sm text-zinc-400">No rows found in `pick_tasks`.</p>
@@ -221,7 +221,7 @@ export default async function PickPackControlTower() {
 
         <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
           <h2 className="text-xl font-semibold text-zinc-100">Inbound / QA Queue</h2>
-          <p className="mt-1 text-sm text-zinc-400">Shipments Pending Recieve</p>
+          <p className="mt-1 text-sm text-zinc-400">Shipments Pending Receipt</p>
 
           {data.inboundQaQueue.length === 0 ? (
             <p className="mt-4 text-sm text-zinc-400">No joined inbound/QA queue rows found.</p>

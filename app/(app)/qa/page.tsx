@@ -1,5 +1,5 @@
 import KpiTile from '@/components/kpi/KpiTile'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import LineCharts from '@/components/charts/LineCharts'
 import BarChart from '@/components/charts/BarChart'
 import DataTable, { type Column } from '@/components/tables/DataTable'
@@ -52,11 +52,11 @@ export default async function QaPage() {
         <KpiTile title="CycleCount" value={cycleCount} accent="text-blue-100 group-hover:text-blue-50" />
       </div>
 
-      <SignalPulseBoard
+      <OperationsTrendBoard
         title="Quality Control"
         description="Live View."
         summary="Quality Table."
-        signals={[
+        metrics={[
           {
             label: 'Inspection',
             color: '#38bdf8',

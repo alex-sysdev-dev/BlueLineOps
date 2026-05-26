@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import SignalPulseBoard from '@/components/dashboard/SignalPulseBoard'
+import OperationsTrendBoard from '@/components/dashboard/OperationsTrendBoard'
 import KpiTile from '@/components/kpi/KpiTile'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
@@ -29,7 +29,7 @@ export default async function YmsOverviewPage() {
   const availabilityRate = summary.total > 0 ? Number(((summary.available / summary.total) * 100).toFixed(1)) : 0
   const openOrders = orders.filter((order) => !isClosedOrder(order.status)).length
   const trailersInYard = trailers.filter((trailer) => Boolean(trailer.current_spot_id)).length
-  const pressureRate = clamp(openOrders * 6, 8, 96)
+  const demandRate = clamp(openOrders * 6, 8, 96)
   const reservationRate = summary.total > 0 ? Number((((summary.reserved + summary.blocked + summary.maintenance) / summary.total) * 100).toFixed(1)) : 0
 
   const zoneCounts = Array.from(
@@ -70,13 +70,13 @@ export default async function YmsOverviewPage() {
         <KpiTile title="Open Orders" value={openOrders} accent="text-amber-100 group-hover:text-amber-50" />
       </div>
 
-      <SignalPulseBoard
+      <OperationsTrendBoard
         title="Yard Traffic"
-        description="View of how spot occupancy, availability, trailer presence, and order pressure are interacting across the yard."
+        description="View of how spot occupancy, availability, trailer presence, and order demand are interacting across the yard."
         summary="YMS Traffic."
-        signals={[
+        metrics={[
           {
-            label: 'Occupancy Load',
+            label: 'Occupancy',
             color: '#38bdf8',
             level: occupancyRate,
             displayValue: `${occupancyRate.toFixed(1)}%`,
@@ -97,9 +97,9 @@ export default async function YmsOverviewPage() {
             note: 'Trailers currently sitting in assigned yard spots.',
           },
           {
-            label: 'Order Pressure',
+            label: 'Order Demand',
             color: '#fb7185',
-            level: pressureRate,
+            level: demandRate,
             displayValue: `${openOrders}`,
             note: 'Open order demand currently leaning on yard and dock activity.',
           },
@@ -127,7 +127,7 @@ export default async function YmsOverviewPage() {
               <div className="text-zinc-100 text-lg font-semibold">{summary.unknown}</div>
             </div>
             <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/40 p-3 sm:col-span-2">
-              <div className="text-zinc-400">Reserved / Blocked Pressure</div>
+              <div className="text-zinc-400">Reserved / Blocked Capacity</div>
               <div className="text-zinc-100 text-lg font-semibold">{reservationRate.toFixed(1)}%</div>
             </div>
           </div>

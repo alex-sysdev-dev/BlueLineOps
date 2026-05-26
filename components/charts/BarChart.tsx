@@ -63,7 +63,7 @@ export default function BarChart({ title, labels, series, description }: BarChar
 
   if (labels.length === 0 || series.length === 0) {
     return (
-      <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
+      <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
         <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
         <p className="mt-2 text-sm text-zinc-400">{description ?? 'No bar chart data available yet.'}</p>
       </section>
@@ -85,10 +85,9 @@ export default function BarChart({ title, labels, series, description }: BarChar
   const xTickStep = Math.max(1, Math.ceil(labels.length / 8))
 
   return (
-    <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
+    <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(150deg,rgba(3,7,18,0.95),rgba(15,23,42,0.88))] p-6">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
-        {description ? <p className="mt-1 text-sm text-zinc-400">{description}</p> : null}
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full">

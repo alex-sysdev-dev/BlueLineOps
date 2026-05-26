@@ -191,9 +191,9 @@ export default function AgentWidget() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask about a KPI or order…"
+                aria-label="Ask about a KPI or order"
                 disabled={loading}
-                className="flex-1 resize-none bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 px-3 py-2 focus:outline-none focus:border-blue-500 max-h-32"
+                className="flex-1 resize-none bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-100 px-3 py-2 focus:outline-none focus:border-blue-500 max-h-32"
               />
               <button
                 type="submit"

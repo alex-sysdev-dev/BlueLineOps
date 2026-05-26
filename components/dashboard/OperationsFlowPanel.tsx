@@ -2,23 +2,23 @@
 
 import { startTransition, useEffect, useRef, useState } from "react"
 
-export type OperationalPulsePoint = {
+export type OperationsFlowPoint = {
   backlog: number
   cpt: number
   flow: number
   capacity: number
 }
 
-type OperationalPulsePanelProps = {
+type OperationsFlowPanelProps = {
   title: string
   description: string
-  seed: OperationalPulsePoint[]
+  seed: OperationsFlowPoint[]
   modeLabel: string
   modeSummary: string
 }
 
 const SERIES = [
-  { key: "backlog", label: "Order Pressure", color: "#38bdf8" },
+  { key: "backlog", label: "Order Load", color: "#38bdf8" },
   { key: "cpt", label: "CPT Exposure", color: "#fb7185" },
   { key: "flow", label: "Flow Efficiency", color: "#34d399" },
   { key: "capacity", label: "Capacity Load", color: "#f59e0b" },
@@ -54,7 +54,7 @@ function metricTone(value: number): string {
 }
 
 function metricNarrative(label: string, value: number): string {
-  if (label === "Order Pressure") {
+  if (label === "Order Load") {
     return value >= 70 ? "Backlog is stacking across the floor." : "Backlog is moving at a controllable pace."
   }
   if (label === "CPT Exposure") {
@@ -74,15 +74,15 @@ function formatTimelineLabel(timestamp: number): string {
   })
 }
 
-export default function OperationalPulsePanel({
+export default function OperationsFlowPanel({
   title,
   description,
   seed,
   modeLabel,
   modeSummary,
-}: OperationalPulsePanelProps) {
+}: OperationsFlowPanelProps) {
   const initialSeed = seed.length > 0 ? seed : [{ backlog: 56, cpt: 34, flow: 62, capacity: 48 }]
-  const [points, setPoints] = useState<OperationalPulsePoint[]>(initialSeed)
+  const [points, setPoints] = useState<OperationsFlowPoint[]>(initialSeed)
   const [timelineEnd, setTimelineEnd] = useState(() => Date.now())
   const seedRef = useRef(initialSeed)
   const tickRef = useRef(initialSeed.length)
@@ -96,7 +96,7 @@ export default function OperationalPulsePanel({
           const previous = source[source.length - 1] ?? anchor
           const prior = source[source.length - 2] ?? previous
 
-          const nextPoint: OperationalPulsePoint = {
+          const nextPoint: OperationsFlowPoint = {
             backlog: evolvePoint(previous.backlog, anchor.backlog, tickRef.current, 0.8, prior.backlog),
             cpt: evolvePoint(previous.cpt, anchor.cpt, tickRef.current, 2.4, prior.cpt),
             flow: evolvePoint(previous.flow, anchor.flow, tickRef.current, 4.1, prior.flow),
@@ -140,7 +140,7 @@ export default function OperationalPulsePanel({
   const xTickStep = Math.max(1, Math.ceil(points.length / 6))
 
   return (
-    <section className="rounded-2xl border border-zinc-700/70 bg-[linear-gradient(155deg,rgba(3,7,18,0.95),rgba(15,23,42,0.9))] p-6">
+    <section className="ops-card rounded-2xl border border-zinc-700/70 bg-[linear-gradient(155deg,rgba(3,7,18,0.95),rgba(15,23,42,0.9))] p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
@@ -150,7 +150,6 @@ export default function OperationalPulsePanel({
               {modeLabel}
             </span>
           </div>
-          <p className="mt-2 max-w-3xl text-sm text-zinc-400">{description}</p>
         </div>
 
         <div className="max-w-sm rounded-2xl border border-zinc-700/60 bg-zinc-900/45 px-4 py-3 text-sm text-zinc-300">
@@ -252,13 +251,12 @@ export default function OperationalPulsePanel({
         {SERIES.map((series) => {
           const value = current[series.key]
           return (
-            <div key={`card-${series.key}`} className="rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4">
+            <div key={`card-${series.key}`} className="ops-card rounded-xl border border-zinc-700/60 bg-zinc-900/45 p-4">
               <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">{series.label}</div>
               <div className="mt-2 flex items-end justify-between gap-3">
                 <div className="text-3xl font-semibold text-zinc-100">{Math.round(value)}</div>
                 <div className="rounded-full border border-zinc-700/70 px-2.5 py-1 text-xs font-medium text-zinc-300">{metricTone(value)}</div>
               </div>
-              <p className="mt-2 text-sm text-zinc-400">{metricNarrative(series.label, value)}</p>
             </div>
           )
         })}
