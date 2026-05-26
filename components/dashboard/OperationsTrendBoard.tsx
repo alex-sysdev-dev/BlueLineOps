@@ -104,14 +104,16 @@ export default function OperationsTrendBoard({ title, description, summary, metr
             <h2 className="text-xl font-semibold text-zinc-100">{title}</h2>
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-emerald-200">
               <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.85)]" />
-              Live Flow
+              Live
             </span>
           </div>
         </div>
 
-        <div className="max-w-sm rounded-2xl border border-zinc-700/60 bg-zinc-900/45 px-4 py-3 text-sm text-zinc-300">
-          {summary}
-        </div>
+        {summary ? (
+          <div className="max-w-sm rounded-2xl border border-zinc-700/60 bg-zinc-900/45 px-4 py-3 text-sm text-zinc-300">
+            {summary}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 rounded-2xl border border-zinc-800/80 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.12),transparent_42%),linear-gradient(180deg,rgba(2,6,23,0.8),rgba(2,6,23,0.98))] p-4">

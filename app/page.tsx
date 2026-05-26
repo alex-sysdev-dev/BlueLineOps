@@ -42,9 +42,9 @@ export default function LandingPage() {
 
           <div className="w-full">
             <OperationsTrendBoard
-              title="Live"
-              description="Live"
-              summary="Live"
+              title="Live Updates"
+              description="Live Operating KPIs"
+              summary=""
               metrics={[
                 {
                   label: "Order Volume",

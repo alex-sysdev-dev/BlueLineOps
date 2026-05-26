@@ -302,7 +302,7 @@ export default async function ExecutiveControlCenter() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.8fr_1fr] gap-6">
         <OperationsFlowPanel
-          title="Operational"
+          title="Operational Flow"
           description=""
           seed={OperationsFlow.seed}
           modeLabel={OperationsFlow.modeLabel}
