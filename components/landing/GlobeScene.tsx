@@ -201,14 +201,49 @@ export default function GlobeScene() {
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+    const globeContainer = container
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let world: any
     let ro: ResizeObserver | null = null
+    let resumeRotationTimer: number | null = null
+
+    function setAutoRotate(enabled: boolean) {
+      if (!world) return
+      world.controls().autoRotate = enabled
+    }
+
+    function pauseRotation() {
+      if (resumeRotationTimer) {
+        window.clearTimeout(resumeRotationTimer)
+        resumeRotationTimer = null
+      }
+      setAutoRotate(false)
+    }
+
+    function resumeRotationSoon() {
+      if (resumeRotationTimer) {
+        window.clearTimeout(resumeRotationTimer)
+      }
+      resumeRotationTimer = window.setTimeout(() => setAutoRotate(true), 900)
+    }
+
+    function handlePointerEnter() {
+      pauseRotation()
+    }
+
+    function handlePointerMove() {
+      pauseRotation()
+    }
+
+    function handlePointerLeave() {
+      globeContainer.style.cursor = 'default'
+      resumeRotationSoon()
+    }
 
     import('globe.gl').then(({ default: Globe }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      world = (Globe as any)()(container)
+      world = (Globe as any)()(globeContainer)
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
         .backgroundColor('#000000')
         .pointsData(NODES)
@@ -232,20 +267,37 @@ export default function GlobeScene() {
         .showAtmosphere(true)
         .atmosphereColor('#0078ff')
         .atmosphereAltitude(0.18)
-        .onPointClick(() => router.push('/login?mode=enterprise'))
+        .onPointHover((node: GlobeNode | null) => {
+          globeContainer.style.cursor = node ? 'pointer' : 'grab'
+          pauseRotation()
+        })
+        .onPointClick(() => {
+          pauseRotation()
+          router.push('/login?mode=enterprise')
+        })
 
       world.controls().autoRotate = true
       world.controls().autoRotateSpeed = 0.65
 
+      globeContainer.addEventListener('pointerenter', handlePointerEnter)
+      globeContainer.addEventListener('pointermove', handlePointerMove)
+      globeContainer.addEventListener('pointerleave', handlePointerLeave)
+
       ro = new ResizeObserver(() => {
         if (!world) return
-        world.width(container.clientWidth)
-        world.height(container.clientHeight)
+        world.width(globeContainer.clientWidth)
+        world.height(globeContainer.clientHeight)
       })
-      ro.observe(container)
+      ro.observe(globeContainer)
     })
 
     return () => {
+      if (resumeRotationTimer) {
+        window.clearTimeout(resumeRotationTimer)
+      }
+      globeContainer.removeEventListener('pointerenter', handlePointerEnter)
+      globeContainer.removeEventListener('pointermove', handlePointerMove)
+      globeContainer.removeEventListener('pointerleave', handlePointerLeave)
       ro?.disconnect()
       try {
         world?.renderer()?.dispose()

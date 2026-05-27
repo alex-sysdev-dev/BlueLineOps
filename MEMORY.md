@@ -100,3 +100,18 @@
 **What was decided:** Create `docs/supabase-magic-link-email-template.html` as a review-only Supabase Auth email template with the deployed `Landing.png` image wrapped by `{{ .ConfirmationURL }}`.
 **Why:** Alexander needs to inspect and approve the email content before it is copied into Supabase Auth templates.
 **What was rejected:** Wiring the template directly into Supabase before approval was rejected because the email copy and visual treatment still need owner review.
+
+## 2026-05-26, Approved BlueLineOps Supabase Auth template applied
+**What was decided:** Apply the approved BlueLineOps email HTML to the hosted Supabase Auth confirmation and magic-link templates through the Supabase Management API.
+**Why:** Alexander approved the reviewed template and needs production Auth emails to use the branded clickable `Landing.png` magic-link treatment.
+**What was rejected:** Using the local service role key for Management API changes was rejected because Supabase requires a personal access token for hosted project Auth config updates.
+
+## 2026-05-26, Remove direct magic-link test user before real signup
+**What was decided:** Delete the Supabase Auth user record for `xpertmarxman@gmail.com` that was created by the direct OTP/magic-link test.
+**Why:** The direct test proved the hosted email template worked, but it bypassed the app signup form and caused the real signup flow to report the email as an existing account.
+**What was rejected:** Removing the email from `ENTERPRISE_ACCESS_EMAILS` was rejected because the signup blocker came from `auth.users`, not the owner allowlist.
+
+## 2026-05-26, Landing globe pauses during pointer interaction
+**What was decided:** Pause the landing-page globe rotation when the pointer enters or moves over the globe, show a pointer cursor on nodes, and resume rotation shortly after pointer leave.
+**Why:** The spinning globe made node clicks difficult and sometimes felt like it required two clicks; pausing during pointer interaction makes node selection practical without changing the landing-page layout.
+**What was rejected:** Replacing the node interaction or making unrelated landing-page design changes was rejected because the requested fix was limited to click usability.
