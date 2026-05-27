@@ -111,7 +111,7 @@
 **Why:** The direct test proved the hosted email template worked, but it bypassed the app signup form and caused the real signup flow to report the email as an existing account.
 **What was rejected:** Removing the email from `ENTERPRISE_ACCESS_EMAILS` was rejected because the signup blocker came from `auth.users`, not the owner allowlist.
 
-## 2026-05-26, Landing globe pauses during pointer interaction
-**What was decided:** Pause the landing-page globe rotation when the pointer enters or moves over the globe, show a pointer cursor on nodes, and resume rotation shortly after pointer leave.
-**Why:** The spinning globe made node clicks difficult and sometimes felt like it required two clicks; pausing during pointer interaction makes node selection practical without changing the landing-page layout.
-**What was rejected:** Replacing the node interaction or making unrelated landing-page design changes was rejected because the requested fix was limited to click usability.
+## 2026-05-26, Landing globe pauses only on node hover
+**What was decided:** Keep the landing-page globe rotating normally and pause rotation only while `globe.gl` reports that the pointer is directly over a node.
+**Why:** Pausing on general pointer entry stopped the globe too aggressively; the intended behavior is motion by default with a stable target only during node hover.
+**What was rejected:** Pausing the whole globe whenever the mouse is near the globe and adding a pointer-finger cursor were rejected because they made the interaction feel stuck and visually noisy.

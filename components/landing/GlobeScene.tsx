@@ -206,39 +206,10 @@ export default function GlobeScene() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let world: any
     let ro: ResizeObserver | null = null
-    let resumeRotationTimer: number | null = null
 
     function setAutoRotate(enabled: boolean) {
       if (!world) return
       world.controls().autoRotate = enabled
-    }
-
-    function pauseRotation() {
-      if (resumeRotationTimer) {
-        window.clearTimeout(resumeRotationTimer)
-        resumeRotationTimer = null
-      }
-      setAutoRotate(false)
-    }
-
-    function resumeRotationSoon() {
-      if (resumeRotationTimer) {
-        window.clearTimeout(resumeRotationTimer)
-      }
-      resumeRotationTimer = window.setTimeout(() => setAutoRotate(true), 900)
-    }
-
-    function handlePointerEnter() {
-      pauseRotation()
-    }
-
-    function handlePointerMove() {
-      pauseRotation()
-    }
-
-    function handlePointerLeave() {
-      globeContainer.style.cursor = 'default'
-      resumeRotationSoon()
     }
 
     import('globe.gl').then(({ default: Globe }) => {
@@ -268,20 +239,16 @@ export default function GlobeScene() {
         .atmosphereColor('#0078ff')
         .atmosphereAltitude(0.18)
         .onPointHover((node: GlobeNode | null) => {
-          globeContainer.style.cursor = node ? 'pointer' : 'grab'
-          pauseRotation()
+          setAutoRotate(!node)
         })
         .onPointClick(() => {
-          pauseRotation()
+          setAutoRotate(false)
           router.push('/login?mode=enterprise')
         })
 
       world.controls().autoRotate = true
       world.controls().autoRotateSpeed = 0.65
-
-      globeContainer.addEventListener('pointerenter', handlePointerEnter)
-      globeContainer.addEventListener('pointermove', handlePointerMove)
-      globeContainer.addEventListener('pointerleave', handlePointerLeave)
+      globeContainer.style.cursor = 'default'
 
       ro = new ResizeObserver(() => {
         if (!world) return
@@ -292,12 +259,6 @@ export default function GlobeScene() {
     })
 
     return () => {
-      if (resumeRotationTimer) {
-        window.clearTimeout(resumeRotationTimer)
-      }
-      globeContainer.removeEventListener('pointerenter', handlePointerEnter)
-      globeContainer.removeEventListener('pointermove', handlePointerMove)
-      globeContainer.removeEventListener('pointerleave', handlePointerLeave)
       ro?.disconnect()
       try {
         world?.renderer()?.dispose()
