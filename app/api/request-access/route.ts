@@ -1,14 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { serverSupabase } from '@/lib/supabase-server'
-import { buildContactSalesEmail } from '@/lib/email/contact-sales-template'
+import { buildRequestAccessEmail } from '@/lib/email/request-access-template'
 
-type ContactSalesPayload = {
+type RequestAccessPayload = {
   name?: unknown
   email?: unknown
   company?: unknown
-  phone?: unknown
   role?: unknown
-  useCase?: unknown
+  accessNeed?: unknown
+  teamSize?: unknown
+  requestReason?: unknown
   newsletterOptIn?: unknown
 }
 
@@ -21,18 +22,19 @@ function isEmail(value: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const payload = (await request.json().catch(() => null)) as ContactSalesPayload | null
+  const payload = (await request.json().catch(() => null)) as RequestAccessPayload | null
 
   const name = clean(payload?.name)
   const email = clean(payload?.email).toLowerCase()
   const company = clean(payload?.company)
-  const phone = clean(payload?.phone)
   const role = clean(payload?.role)
-  const useCase = clean(payload?.useCase)
+  const accessNeed = clean(payload?.accessNeed)
+  const teamSize = clean(payload?.teamSize)
+  const requestReason = clean(payload?.requestReason)
   const newsletterOptIn = typeof payload?.newsletterOptIn === 'boolean' ? payload.newsletterOptIn : true
 
-  if (!name || !email || !company || !phone || !role) {
-    return NextResponse.json({ message: 'All fields are required.' }, { status: 400 })
+  if (!name || !email || !company || !role || !accessNeed) {
+    return NextResponse.json({ message: 'Name, email, company, role, and access need are required.' }, { status: 400 })
   }
 
   if (!isEmail(email)) {
@@ -44,20 +46,21 @@ export async function POST(request: NextRequest) {
   const fromEmail = process.env.CONTACT_SALES_FROM_EMAIL ?? 'BlueLineOps <onboarding@resend.dev>'
 
   try {
-    const { error: insertError } = await serverSupabase.from('contact_sales_requests').insert({
+    const { error: insertError } = await serverSupabase.from('request_access_requests').insert({
       name,
       email,
       company,
-      phone,
       role,
-      use_case: useCase,
+      access_need: accessNeed,
+      team_size: teamSize,
+      request_reason: requestReason,
       newsletter_opt_in: newsletterOptIn,
-      source: 'contact_sales_form',
+      source: 'request_access_form',
       status: 'new',
     })
 
     if (insertError) {
-      return NextResponse.json({ message: 'Could not save contact request.' }, { status: 502 })
+      return NextResponse.json({ message: 'Could not save access request.' }, { status: 502 })
     }
   } catch (insertError) {
     return NextResponse.json(
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
         message:
           insertError instanceof Error
             ? insertError.message
-            : 'Contact lead capture is not configured yet.',
+            : 'Request access capture is not configured yet.',
       },
       { status: 503 }
     )
@@ -73,18 +76,19 @@ export async function POST(request: NextRequest) {
 
   if (!apiKey) {
     return NextResponse.json(
-      { message: 'Contact request saved. Email notification is not configured yet.' },
+      { message: 'Access request saved. Email notification is not configured yet.' },
       { status: 503 }
     )
   }
 
-  const emailContent = buildContactSalesEmail({
+  const emailContent = buildRequestAccessEmail({
     name,
     email,
     company,
-    phone,
     role,
-    useCase,
+    accessNeed,
+    teamSize,
+    requestReason,
     newsletterOptIn,
   })
 
@@ -106,10 +110,10 @@ export async function POST(request: NextRequest) {
   if (!response.ok) {
     const errorPayload = (await response.json().catch(() => null)) as { message?: string } | null
     return NextResponse.json(
-      { message: errorPayload?.message ?? 'Could not send contact request.' },
+      { message: errorPayload?.message ?? 'Could not send access request.' },
       { status: 502 }
     )
   }
 
-  return NextResponse.json({ message: 'Contact request sent.' })
+  return NextResponse.json({ message: 'Access request sent.' })
 }

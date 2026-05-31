@@ -184,7 +184,7 @@ export default function LandingHero() {
             <p className="mt-3 text-[13px] font-semibold text-zinc-100 sm:text-sm">Operate proactively. Not reactively.</p>
             <div className="mt-4 flex flex-col gap-3">
               <Link
-                href="/login?mode=contact"
+                href="/request-access"
                 className="rounded-xl border border-zinc-700 bg-black/70 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-200 transition hover:border-zinc-400 hover:text-white"
               >
                 Request Access

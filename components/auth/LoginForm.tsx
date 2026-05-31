@@ -31,7 +31,6 @@ function modeTitle(mode: LoginMode): string {
 
 function modeDescription(mode: LoginMode): string {
   if (mode === 'enterprise') return 'Owner-only operational access'
-  if (mode === 'contact') return 'Send your operating context directly to Alexander'
   if (mode === 'reset') return 'Send a password recovery link'
   if (mode === 'update-password') return 'Choose a new password for this account'
   return 'Use your account credentials'
@@ -326,7 +325,6 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] uppercase tracking-widest text-zinc-300">Use Case</label>
                   <textarea
-                    required
                     suppressHydrationWarning
                     value={useCase}
                     onChange={(event) => setUseCase(event.target.value)}

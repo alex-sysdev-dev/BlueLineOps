@@ -144,3 +144,8 @@
 **What was decided:** Store Contact Sales submissions in `public.contact_sales_requests` with contact fields, use case, status, source, timestamps, and newsletter opt-in before sending the Resend notification.
 **Why:** Email alerts are useful, but BlueLineOps also needs a durable lead list for follow-up, newsletters, and prospect history.
 **What was rejected:** Email-only Contact Sales capture was rejected because inbox-only storage is not reliable enough for newsletters or lead management.
+
+## 2026-05-31, Separate Request Access from Contact Sales
+**What was decided:** Keep Contact Sales at `/login?mode=contact`, move Request Access to `/request-access`, give it its own form, API route, Supabase table, and Resend email template, and make Contact Sales use case optional.
+**Why:** Request Access and Contact Sales are different intents. Access requests need approval context, while Contact Sales should stay focused on sales follow-up and optional operating context.
+**What was rejected:** Reusing the Contact Sales form for Request Access was rejected because it makes the product path unclear and mixes prospect intent with access-control workflow.
