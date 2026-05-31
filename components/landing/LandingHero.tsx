@@ -12,6 +12,24 @@ const GlobeScene = dynamic(() => import('./GlobeScene'), { ssr: false })
 // ── Bar heights ────────────────────────────────────────────────────────────
 const BAR_HEIGHTS = ['h-[38%]','h-[52%]','h-[46%]','h-[60%]','h-[68%]','h-[63%]','h-[80%]'] as const
 
+const MODULES = [
+  {
+    title: 'Inbound',
+    problem: 'Late dock visibility slows receiving and creates blind handoffs.',
+    answer: 'BlueLineOps shows inbound status, QA blockers, and dock pressure in one operating view.',
+  },
+  {
+    title: 'Inventory',
+    problem: 'Risk is usually found after orders are already exposed.',
+    answer: 'Inventory signals connect QA, replenishment, and outbound demand before the floor feels the miss.',
+  },
+  {
+    title: 'Labor Planning',
+    problem: 'Supervisors lose time balancing headcount against live volume.',
+    answer: 'Labor and throughput views make the next move clear by shift, zone, and workload.',
+  },
+] as const
+
 // ── Count-up ──────────────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1800) {
   const [count, setCount] = useState(0)
@@ -65,7 +83,8 @@ export default function LandingHero() {
   const h = (id: string) => hovered === id
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+    <div className="bg-black text-zinc-100">
+      <section className="relative min-h-[100svh] w-full overflow-hidden bg-black">
 
       {/* ── Globe — full screen background ───────────────────────────────── */}
       <div className="absolute inset-0 z-0">
@@ -73,13 +92,13 @@ export default function LandingHero() {
       </div>
 
       {/* ── Overlay layout — pointer-events-none so globe stays interactive ─ */}
-      <div className="relative z-10 min-h-screen flex flex-col pointer-events-none">
+      <div className="relative z-10 flex min-h-[100svh] flex-col pointer-events-none">
 
         {/* TOP ROW */}
-        <div className="flex items-start justify-between px-7 pt-6 gap-4">
+        <div className="grid grid-cols-1 items-start gap-4 px-4 pt-5 sm:px-6 lg:flex lg:justify-between lg:px-7 lg:pt-6">
 
           {/* Global Visibility */}
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto hidden lg:block">
             <Panel
               accentClass="border-cyan-400/60"
               glowClass="shadow-[0_0_28px_rgba(34,211,238,0.15)]"
@@ -106,11 +125,11 @@ export default function LandingHero() {
           </div>
 
           {/* Center: logo + brand title */}
-          <div className={[s.fadeUp, s.d005, 'flex flex-col items-center pt-1 gap-1.5'].join(' ')}>
+          <div className={[s.fadeUp, s.d005, 'mx-auto flex max-w-xl flex-col items-center gap-2 pt-1 text-center'].join(' ')}>
             <div className={[s.floatLogo, 'h-9 w-9 rounded-full border border-blue-400/50 bg-black/80 flex items-center justify-center'].join(' ')}>
               <Image src="/login.svg" alt="" width={20} height={20} className="opacity-90" />
             </div>
-            <h1 className="text-[clamp(1.8rem,4vw,3.25rem)] font-bold tracking-tighter leading-none drop-shadow-[0_2px_20px_rgba(0,0,0,0.95)]">
+            <h1 className="text-[clamp(2.1rem,11vw,3.25rem)] font-bold tracking-tighter leading-none drop-shadow-[0_2px_20px_rgba(0,0,0,0.95)]">
               <span className="text-blue-400">Blue</span>
               <span className="text-zinc-100">LineOps</span>
             </h1>
@@ -120,7 +139,7 @@ export default function LandingHero() {
           </div>
 
           {/* Operational Insights */}
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto hidden lg:block">
             <Panel
               accentClass="border-blue-400/60"
               glowClass="shadow-[0_0_28px_rgba(59,130,246,0.15)]"
@@ -148,20 +167,52 @@ export default function LandingHero() {
         </div>
 
         {/* Spacer — globe shows through, pushes bottom row to bottom */}
+        <div className="pointer-events-auto mx-4 mt-5 max-w-sm rounded-2xl border border-zinc-800/80 bg-black/68 p-4 text-left shadow-[0_0_34px_rgba(0,0,0,0.32)] backdrop-blur-md sm:mx-6 sm:p-5 lg:absolute lg:left-0 lg:top-44 lg:mx-0 lg:mt-0 lg:w-80 lg:max-w-none lg:rounded-l-none lg:border-l-0 xl:w-96">
+          <div>
+            <p className="text-[11px] font-semibold uppercase leading-5 tracking-[0.18em] text-blue-300 sm:text-xs">
+              Execution Breakdowns Cost Time, Labor, and Revenue.
+            </p>
+            <p className="mt-2 text-[13px] leading-6 text-zinc-300 sm:text-sm">
+              Most fulfillment operations run on fragmented systems, delayed reporting, and disconnected data. By the time a problem surfaces, it's already affecting service levels.
+            </p>
+            <p className="mt-4 text-[11px] font-semibold uppercase leading-5 tracking-[0.18em] text-emerald-300 sm:text-xs">
+              BlueLineOps Command View
+            </p>
+            <p className="mt-2 text-[13px] leading-6 text-zinc-300 sm:text-sm">
+              BlueLineOps brings every critical operational signal into one live command view, giving leaders instant visibility into warehouse performance, labor utilization, inventory accuracy, inbound execution, yard activity, and CPT risk.
+            </p>
+            <p className="mt-3 text-[13px] font-semibold text-zinc-100 sm:text-sm">Operate proactively. Not reactively.</p>
+            <div className="mt-4 flex flex-col gap-3">
+              <Link
+                href="/login?mode=contact"
+                className="rounded-xl border border-zinc-700 bg-black/70 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-200 transition hover:border-zinc-400 hover:text-white"
+              >
+                Request Access
+              </Link>
+              <Link
+                href="/login?mode=contact"
+                className="rounded-xl border border-blue-500/60 bg-blue-600/25 px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-100 transition hover:border-blue-300 hover:bg-blue-600/40"
+              >
+                Contact Sales
+              </Link>
+            </div>
+          </div>
+        </div>
+
         <div className="flex-1" />
 
         {/* Hint — anchored just above bottom row */}
         <div className={[s.fadeUp, s.d045, 'flex items-center justify-center pb-4'].join(' ')}>
           <p className="text-[10px] tracking-[0.3em] text-blue-400/60 uppercase animate-pulse drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
-            ● Click any node on the globe to enter
+            Click any node on the globe to enter
           </p>
         </div>
 
         {/* BOTTOM ROW */}
-        <div className="flex items-end justify-between px-7 pb-7 gap-4">
+        <div className="grid grid-cols-1 items-end gap-4 px-4 pb-5 sm:px-6 lg:flex lg:justify-between lg:px-7 lg:pb-7">
 
           {/* Active Shipments */}
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto hidden lg:block">
             <Panel
               accentClass="border-emerald-400/60"
               glowClass="shadow-[0_0_28px_rgba(52,211,153,0.15)]"
@@ -176,7 +227,7 @@ export default function LandingHero() {
               <p className="text-3xl font-bold text-zinc-100 tabular-nums tracking-tight">
                 {activeShipments.toLocaleString()}
               </p>
-              <p className="mt-0.5 text-[11px] text-emerald-400 font-medium">▲ 13.4% in last 7 days</p>
+              <p className="mt-0.5 text-[11px] text-emerald-400 font-medium">13.4% in last 7 days</p>
               <div className="mt-3 flex items-end gap-0.5 h-7">
                 {BAR_HEIGHTS.map((bh, i) => (
                   <div key={i}
@@ -188,7 +239,7 @@ export default function LandingHero() {
           </div>
 
           {/* Bottom metric cards */}
-          <div className={[s.fadeUp, s.d050, 'flex gap-3 pointer-events-auto'].join(' ')}>
+          <div className={[s.fadeUp, s.d050, 'pointer-events-auto grid grid-cols-3 gap-2 sm:mx-auto sm:max-w-md sm:gap-3 lg:flex lg:max-w-none'].join(' ')}>
             {([
               { value: '100%',  top: 'Uptime',    sub: 'Reliability',    id: 'up',   valCls: 'text-sky-400',     activeCls: 'border-sky-400/55 shadow-[0_0_24px_rgba(56,189,248,0.2)]'   },
               { value: '99.7%', top: 'Precision', sub: 'Accuracy',       id: 'prec', valCls: 'text-emerald-400', activeCls: 'border-emerald-400/55 shadow-[0_0_24px_rgba(52,211,153,0.2)]' },
@@ -198,7 +249,7 @@ export default function LandingHero() {
                 onMouseEnter={() => setHovered(id)}
                 onMouseLeave={() => setHovered(null)}
                 className={[
-                  'w-28 rounded-xl border bg-black/70 backdrop-blur-md p-3.5 text-center cursor-default',
+                  'min-w-0 rounded-xl border bg-black/70 p-3 text-center backdrop-blur-md cursor-default sm:p-3.5 lg:w-28',
                   'transition-all duration-300 hover:-translate-y-1',
                   hovered === id ? activeCls : 'border-zinc-700/60',
                 ].join(' ')}
@@ -211,7 +262,7 @@ export default function LandingHero() {
           </div>
 
           {/* Enterprise Login */}
-          <div className={[s.fadeUp, s.d050, 'pointer-events-auto self-end'].join(' ')}>
+          <div className={[s.fadeUp, s.d050, 'pointer-events-auto self-end lg:order-none'].join(' ')}>
             <Link href="/login?mode=enterprise">
               <button
                 type="button"
@@ -225,7 +276,7 @@ export default function LandingHero() {
                   hover:border-blue-400/80 hover:bg-blue-950/50
                   hover:shadow-[0_0_40px_rgba(59,130,246,0.4)]
                   hover:-translate-y-1 active:scale-[0.98] cursor-pointer
-                  flex flex-col items-center gap-1.5
+                  flex w-full flex-col items-center gap-1.5 sm:w-auto
                 "
               >
                 <span className={[
@@ -242,7 +293,7 @@ export default function LandingHero() {
           </div>
 
           {/* Intelligence Layer */}
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto hidden lg:block">
             <Panel
               accentClass="border-violet-400/60"
               glowClass="shadow-[0_0_28px_rgba(167,139,250,0.15)]"
@@ -269,6 +320,29 @@ export default function LandingHero() {
           </div>
         </div>
       </div>
+      </section>
+
+      <section className="border-t border-zinc-900 bg-zinc-950 px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-300">Operational Modules</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">
+              Built for the parts of fulfillment that break first.
+            </h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {MODULES.map((module) => (
+              <article key={module.title} className="rounded-xl border border-zinc-800 bg-black/45 p-5">
+                <h3 className="text-lg font-semibold text-zinc-100">{module.title}</h3>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">Problem</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">{module.problem}</p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">BlueLineOps</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">{module.answer}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

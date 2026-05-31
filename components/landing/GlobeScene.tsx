@@ -243,7 +243,7 @@ export default function GlobeScene() {
         })
         .onPointClick(() => {
           setAutoRotate(false)
-          router.push('/login?mode=enterprise')
+          router.push('/login?mode=contact')
         })
 
       world.controls().autoRotate = true

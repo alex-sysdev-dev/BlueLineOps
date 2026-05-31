@@ -1,6 +1,6 @@
 import LoginForm from '@/components/auth/LoginForm'
 
-type LoginMode = 'enterprise' | 'login' | 'signup' | 'reset' | 'update-password'
+type LoginMode = 'enterprise' | 'login' | 'contact' | 'reset' | 'update-password'
 
 type LoginPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
@@ -11,7 +11,7 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 }
 
 function resolveMode(value: string | undefined): LoginMode {
-  if (value === 'signup' || value === 'reset' || value === 'update-password') {
+  if (value === 'contact' || value === 'reset' || value === 'update-password') {
     return value
   }
 
@@ -24,7 +24,7 @@ function resolveMode(value: string | undefined): LoginMode {
 
 function resolveMessage(status: string | undefined, error: string | undefined): string | null {
   if (status === 'complete') {
-    return 'Signup complete. You can log in now.'
+    return 'Account confirmed. You can log in now.'
   }
 
   if (status === 'recovery') {

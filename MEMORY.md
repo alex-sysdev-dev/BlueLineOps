@@ -115,3 +115,32 @@
 **What was decided:** Keep the landing-page globe rotating normally and pause rotation only while `globe.gl` reports that the pointer is directly over a node.
 **Why:** Pausing on general pointer entry stopped the globe too aggressively; the intended behavior is motion by default with a stable target only during node hover.
 **What was rejected:** Pausing the whole globe whenever the mouse is near the globe and adding a pointer-finger cursor were rejected because they made the interaction feel stuck and visually noisy.
+
+## Session Summary, 2026-05-26
+**Worked on:** Supabase Auth login/signup/reset flow, approved magic-link email template, production deployment, and landing globe click usability.
+**Completed:** Added real login, signup, reset-password, update-password, auth callback, owner-only Enterprise access, duplicate-email check, and protected-route proxy. Created and approved `docs/supabase-magic-link-email-template.html`, applied it to hosted Supabase confirmation and magic-link templates, and verified the hosted config includes the BlueLineOps subject, `Landing.png`, and `{{ .ConfirmationURL }}`. Deleted the direct OTP test user for `xpertmarxman@gmail.com` so the normal signup flow can create the account with phone, occupation, and password metadata. Pushed production commits through `main`, ending at `fe81726 Pause landing globe only on node hover`.
+**In progress:** User should finish real signup testing through `/login?mode=signup` and verify the production landing globe behavior after Vercel finishes deploying `fe81726`.
+**Decisions made:** Public users sign up through the app form; Enterprise remains owner-only via `ENTERPRISE_ACCESS_EMAILS`; hosted Supabase Auth email templates use the approved clickable `Landing.png` layout; the landing globe rotates by default and pauses only on direct node hover, with no pointer-finger cursor.
+**Next session:** Start by checking `git status`, verifying the latest Vercel deployment for `fe81726`, testing `/login?mode=signup`, and confirming that signup stores email, phone, and occupation in Supabase Auth metadata.
+
+## 2026-05-30, Replace public signup with contact sales
+**What was decided:** Change the public-facing signup path into a Contact Sales flow that opens a prefilled email to `xpertmarxman@gmail.com`.
+**Why:** BlueLineOps should collect prospect context without creating public app accounts or implying immediate self-serve access.
+**What was rejected:** Routing public visitors directly into Supabase signup or Stripe payment was rejected because access should stay controlled until Alexander approves the prospect path.
+
+## 2026-05-30, Contact Sales uses server-side Resend email
+**What was decided:** Submit Contact Sales through `/api/contact-sales` and send server-side through Resend to `xpertmarxman@gmail.com`.
+**Why:** Browser `mailto:` links can fail when Gmail or Outlook handlers are not configured, so the production path needs a reliable server-side email sender.
+**What was rejected:** Relying on client-side `mailto:` was rejected because it produced silent failures for users without a configured mail handler.
+
+## Session Summary, 2026-05-31
+**Worked on:** BlueLineOps landing-page positioning, Contact Sales replacement for public signup, and local Resend email validation.
+**Completed:** Kept the globe as the main landing-page feature, moved the problem/solution copy into a left sidebar-width panel, routed Request Access, Contact Sales, and globe node clicks to `/login?mode=contact`, removed public login/signup tabs from the Contact Sales view, added `/api/contact-sales`, configured the form to send server-side through Resend, and verified a local test returned `200` with `{"message":"Contact request sent."}`.
+**In progress:** The updated landing and Contact Sales work is local and uncommitted in `E:\alex-sysdev-dev\BlueLineOps`; the C: checkout is separate and does not contain this working set.
+**Decisions made:** Projects should be saved and worked from the E: drive going forward. BlueLineOps Contact Sales should use server-side email instead of `mailto:`.
+**Next session:** Start in `E:\alex-sysdev-dev\BlueLineOps`, verify `git status`, keep the E: checkout as the source of truth, then decide whether to commit/push these local changes or move any remaining C: work into E:.
+
+## 2026-05-31, Contact Sales captures leads in Supabase
+**What was decided:** Store Contact Sales submissions in `public.contact_sales_requests` with contact fields, use case, status, source, timestamps, and newsletter opt-in before sending the Resend notification.
+**Why:** Email alerts are useful, but BlueLineOps also needs a durable lead list for follow-up, newsletters, and prospect history.
+**What was rejected:** Email-only Contact Sales capture was rejected because inbox-only storage is not reliable enough for newsletters or lead management.

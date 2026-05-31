@@ -5,17 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getSupabaseAuthBrowserClient } from '@/lib/supabase-auth-browser'
 
-type LoginMode = 'enterprise' | 'login' | 'signup' | 'reset' | 'update-password'
+type LoginMode = 'enterprise' | 'login' | 'contact' | 'reset' | 'update-password'
 
 type LoginFormProps = {
   initialMode: LoginMode
   initialNextPath: string
   initialMessage: string | null
-}
-
-type EmailExistsResponse = {
-  exists?: boolean
-  message?: string
 }
 
 function normalizeNextPath(value: string): string {
@@ -28,7 +23,7 @@ function normalizeNextPath(value: string): string {
 
 function modeTitle(mode: LoginMode): string {
   if (mode === 'enterprise') return 'Enterprise Login'
-  if (mode === 'signup') return 'Create Account'
+  if (mode === 'contact') return 'Contact Sales'
   if (mode === 'reset') return 'Reset Password'
   if (mode === 'update-password') return 'Set New Password'
   return 'Log In'
@@ -36,7 +31,7 @@ function modeTitle(mode: LoginMode): string {
 
 function modeDescription(mode: LoginMode): string {
   if (mode === 'enterprise') return 'Owner-only operational access'
-  if (mode === 'signup') return 'Create credentials and capture operator details'
+  if (mode === 'contact') return 'Send your operating context directly to Alexander'
   if (mode === 'reset') return 'Send a password recovery link'
   if (mode === 'update-password') return 'Choose a new password for this account'
   return 'Use your account credentials'
@@ -48,9 +43,13 @@ function passwordMeetsMinimum(value: string): boolean {
 
 export default function LoginForm({ initialMode, initialNextPath, initialMessage }: LoginFormProps) {
   const [mode, setMode] = useState<LoginMode>(initialMode)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [company, setCompany] = useState('')
   const [occupation, setOccupation] = useState('')
+  const [useCase, setUseCase] = useState('')
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true)
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(initialMessage)
@@ -60,21 +59,6 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
     setMode(nextMode)
     setError(null)
     setMessage(null)
-  }
-
-  async function checkExistingEmail(normalizedEmail: string): Promise<boolean> {
-    const response = await fetch('/api/auth/email-exists', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: normalizedEmail }),
-    })
-    const payload = (await response.json().catch(() => null)) as EmailExistsResponse | null
-
-    if (!response.ok) {
-      throw new Error(payload?.message ?? 'Could not verify this email. Try again.')
-    }
-
-    return Boolean(payload?.exists)
   }
 
   async function verifyEnterpriseAccess(normalizedEmail: string): Promise<boolean> {
@@ -100,9 +84,42 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
     setMessage(null)
 
     const normalizedEmail = email.trim().toLowerCase()
-    const supabase = getSupabaseAuthBrowserClient()
 
     try {
+      if (mode === 'contact') {
+        const contactResponse = await fetch('/api/contact-sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email: normalizedEmail,
+            company,
+            phone,
+            role: occupation,
+            useCase,
+            newsletterOptIn,
+          }),
+        })
+        const contactPayload = (await contactResponse.json().catch(() => null)) as { message?: string } | null
+
+        if (!contactResponse.ok) {
+          setError(contactPayload?.message ?? 'Could not send contact request.')
+          return
+        }
+
+        setName('')
+        setEmail('')
+        setCompany('')
+        setPhone('')
+        setOccupation('')
+        setUseCase('')
+        setNewsletterOptIn(true)
+        setMessage(contactPayload?.message ?? 'Contact request sent.')
+        return
+      }
+
+      const supabase = getSupabaseAuthBrowserClient()
+
       if (mode === 'reset') {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
           redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/login?mode=update-password&status=recovery')}`,
@@ -141,43 +158,6 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
         return
       }
 
-      if (mode === 'signup') {
-        const exists = await checkExistingEmail(normalizedEmail)
-        if (exists) {
-          setError('That email already has an account. Log in instead.')
-          setMode('login')
-          return
-        }
-
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/login?mode=login&status=complete')}`,
-            data: {
-              phone: phone.trim(),
-              occupation: occupation.trim(),
-            },
-          },
-        })
-
-        if (signUpError) {
-          if (signUpError.message.toLowerCase().includes('already')) {
-            setError('That email already has an account. Log in instead.')
-            setMode('login')
-            return
-          }
-
-          setError(signUpError.message)
-          return
-        }
-
-        setPassword('')
-        setMessage('Account created. Check your email to confirm it, then log in.')
-        setMode('login')
-        return
-      }
-
       if (mode === 'enterprise') {
         const allowed = await verifyEnterpriseAccess(normalizedEmail)
         if (!allowed) return
@@ -202,11 +182,11 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
   }
 
   const isEnterprise = mode === 'enterprise'
-  const isSignup = mode === 'signup'
+  const isContact = mode === 'contact'
   const isReset = mode === 'reset'
   const isUpdatePassword = mode === 'update-password'
-  const submitLabel = isSignup
-    ? 'Create Account'
+  const submitLabel = isContact
+    ? 'Send Request'
     : isReset
       ? 'Send Reset Link'
       : isUpdatePassword
@@ -224,7 +204,7 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
         Back
       </Link>
 
-      <div className="w-full max-w-sm">
+      <div className={`w-full ${isContact ? 'max-w-lg' : 'max-w-sm'}`}>
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="h-9 w-9 rounded-full border border-blue-500/40 bg-zinc-950 flex items-center justify-center">
             <Image src="/login.svg" alt="BlueLineOps" width={20} height={20} className="opacity-90" />
@@ -235,96 +215,154 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
           </span>
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 backdrop-blur-md p-8">
-          <div className="mb-6 grid grid-cols-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-1">
-            <button
-              type="button"
-              onClick={() => switchMode('enterprise')}
-              className={`rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
-                isEnterprise ? 'bg-blue-600/30 text-blue-100' : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              Enterprise
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMode('login')}
-              className={`rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
-                mode === 'login' ? 'bg-blue-600/25 text-blue-100' : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMode('signup')}
-              className={`rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
-                isSignup ? 'bg-emerald-600/20 text-emerald-100' : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+        <div className={`rounded-2xl border border-zinc-800 bg-zinc-950/85 backdrop-blur-md ${isContact ? 'p-9 sm:p-10' : 'p-8'}`}>
+          {!isContact ? (
+            <div className="mb-6 grid grid-cols-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-1">
+              <button
+                type="button"
+                onClick={() => switchMode('enterprise')}
+                className={`rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
+                  isEnterprise ? 'bg-blue-600/30 text-blue-100' : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                Enterprise
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('login')}
+                className={`rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors ${
+                  mode === 'login' ? 'bg-blue-600/25 text-blue-100' : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('contact')}
+                className="rounded-lg px-2 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 transition-colors hover:text-zinc-200"
+              >
+                Contact
+              </button>
+            </div>
+          ) : null}
 
-          <h1 className="text-lg font-semibold text-zinc-100 mb-1">{modeTitle(mode)}</h1>
-          <p className="text-xs text-zinc-500 mb-6 tracking-wide">{modeDescription(mode)}</p>
+          <h1 className={`${isContact ? 'text-2xl mb-6' : 'text-lg mb-1'} font-semibold text-zinc-50`}>
+            {modeTitle(mode)}
+          </h1>
+          {!isContact ? <p className="text-sm text-zinc-300 mb-6 tracking-wide">{modeDescription(mode)}</p> : null}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {!isUpdatePassword ? (
+          <form onSubmit={handleSubmit} className={`flex flex-col ${isContact ? 'gap-5' : 'gap-4'}`}>
+            {isContact ? (
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] uppercase tracking-widest text-zinc-500">Email</label>
+                <label className="text-[11px] uppercase tracking-widest text-zinc-300">Name</label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder={isEnterprise ? 'owner email' : 'you@example.com'}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                  suppressHydrationWarning
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Your name"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
                 />
               </div>
             ) : null}
 
-            {isSignup ? (
+            {!isUpdatePassword ? (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] uppercase tracking-widest text-zinc-300">Email</label>
+                <input
+                  type="email"
+                  required
+                  suppressHydrationWarning
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder={isEnterprise ? 'owner email' : 'you@example.com'}
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                />
+              </div>
+            ) : null}
+
+            {isContact ? (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] uppercase tracking-widest text-zinc-500">Phone</label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
-                    placeholder="Phone number"
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] uppercase tracking-widest text-zinc-500">Occupation</label>
+                  <label className="text-[11px] uppercase tracking-widest text-zinc-300">Company</label>
                   <input
                     type="text"
                     required
-                    value={occupation}
-                    onChange={(event) => setOccupation(event.target.value)}
-                    placeholder="Operations manager, founder, analyst..."
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                    suppressHydrationWarning
+                    value={company}
+                    onChange={(event) => setCompany(event.target.value)}
+                    placeholder="Company or operation"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
                   />
                 </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] uppercase tracking-widest text-zinc-300">Phone</label>
+                  <input
+                    type="tel"
+                    required
+                    suppressHydrationWarning
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    placeholder="Phone number"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] uppercase tracking-widest text-zinc-300">Role</label>
+                  <input
+                    type="text"
+                    required
+                    suppressHydrationWarning
+                    value={occupation}
+                    onChange={(event) => setOccupation(event.target.value)}
+                    placeholder="Operations manager, founder, analyst"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] uppercase tracking-widest text-zinc-300">Use Case</label>
+                  <textarea
+                    required
+                    suppressHydrationWarning
+                    value={useCase}
+                    onChange={(event) => setUseCase(event.target.value)}
+                    placeholder="What problem do you want BlueLineOps to solve?"
+                    rows={4}
+                    className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                  />
+                </div>
+
+                <label className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-200">
+                  <input
+                    type="checkbox"
+                    suppressHydrationWarning
+                    checked={newsletterOptIn}
+                    onChange={(event) => setNewsletterOptIn(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-zinc-600 bg-zinc-950 text-blue-500 focus:ring-blue-500/40"
+                  />
+                  <span>Send me BlueLineOps updates and product notes.</span>
+                </label>
               </>
             ) : null}
 
-            {!isReset ? (
+            {!isReset && !isContact ? (
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] uppercase tracking-widest text-zinc-500">
+                <label className="text-[11px] uppercase tracking-widest text-zinc-300">
                   {isUpdatePassword ? 'New Password' : 'Password'}
                 </label>
                 <input
                   type="password"
                   required
                   minLength={8}
+                  suppressHydrationWarning
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Minimum 8 characters"
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
                 />
               </div>
             ) : null}
@@ -344,27 +382,30 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
             <button
               type="submit"
               disabled={loading}
+              suppressHydrationWarning
               className="mt-2 w-full rounded-xl border border-blue-500/50 bg-blue-600/20 py-3 text-sm font-semibold tracking-[0.15em] uppercase text-blue-100 transition-all duration-200 hover:bg-blue-600/35 hover:border-blue-400/70 hover:shadow-[0_0_32px_rgba(37,99,235,0.35)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? 'Working...' : submitLabel}
             </button>
           </form>
 
-          <div className="mt-5 flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest">
-            {mode !== 'login' ? (
-              <button type="button" onClick={() => switchMode('login')} className="text-blue-300 hover:text-blue-100">
-                Log In
-              </button>
-            ) : null}
-            {mode !== 'reset' && mode !== 'update-password' ? (
-              <button type="button" onClick={() => switchMode('reset')} className="text-zinc-500 hover:text-zinc-300">
-                Reset Password
-              </button>
-            ) : null}
-          </div>
+          {!isContact ? (
+            <div className="mt-5 flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest">
+              {mode !== 'login' ? (
+                <button type="button" onClick={() => switchMode('login')} className="text-blue-300 hover:text-blue-100">
+                  Log In
+                </button>
+              ) : null}
+              {mode !== 'reset' && mode !== 'update-password' ? (
+                <button type="button" onClick={() => switchMode('reset')} className="text-zinc-500 hover:text-zinc-300">
+                  Reset Password
+                </button>
+              ) : null}
+            </div>
+          ) : null}
 
           <p className="mt-5 text-center text-[10px] tracking-widest text-zinc-700 uppercase">
-            Supabase Auth - Secure Access
+            Secure Access
           </p>
         </div>
       </div>
