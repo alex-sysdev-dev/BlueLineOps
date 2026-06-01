@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createSupabaseAuthServerClient } from '@/lib/supabase-auth-server'
-import { isEnterpriseAccessEmail } from '@/lib/enterprise-access'
+import { getAppAccessRoleForEmail, isEnterpriseAccessEmail, isLocalDevPlatformAccessEnabled } from '@/lib/enterprise-access'
 
 const PROTECTED_PREFIXES = [
   '/associates',
@@ -31,6 +31,11 @@ function redirectToLogin(request: NextRequest, reason?: string): NextResponse {
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
+  const { pathname } = request.nextUrl
+
+  if (isLocalDevPlatformAccessEnabled() && isProtectedPath(pathname)) {
+    return response
+  }
 
   const supabase = createSupabaseAuthServerClient(
     () => request.cookies.getAll(),
@@ -51,14 +56,12 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
   if (isProtectedPath(pathname)) {
     if (!user) {
       return redirectToLogin(request)
     }
 
-    if (!isEnterpriseAccessEmail(user.email)) {
+    if (!getAppAccessRoleForEmail(user.email)) {
       return redirectToLogin(request, 'enterprise')
     }
   }

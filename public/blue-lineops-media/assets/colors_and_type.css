@@ -1,0 +1,178 @@
+/* ============================================================================
+   BlueLineOps — Colors & Type Foundations
+   Operational Intelligence for Logistics / AI-powered WMS
+   ----------------------------------------------------------------------------
+   Extracted from the BlueLineOps Next.js codebase (Tailwind v4 + Geist).
+   The product is a DARK-FIRST operations dashboard. Surfaces are near-black
+   zinc/slate, content sits on translucent glass cards, and a single electric
+   blue carries the brand. Status is communicated with a fixed semantic palette
+   (emerald = good, rose = risk, amber = warning, cyan = above-target, etc).
+
+   Load Geist + Geist Mono from Google Fonts in your HTML <head>:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+   ========================================================================== */
+
+:root {
+  /* ---- Brand ---- */
+  --blue-300: #93c5fd;   /* logo ring highlight, light accents */
+  --blue-400: #60a5fa;   /* "Blue" wordmark, links, focus glow */
+  --blue-500: #3b82f6;   /* primary brand blue */
+  --blue-600: #2563eb;   /* primary button, deep accent */
+  --brand-ink: #0b1220;  /* logo disc background */
+
+  /* ---- Neutral surfaces (dark-first) ---- */
+  --bg-app: #09090b;        /* zinc-950 — app shell / page */
+  --bg-panel: #18181b;      /* zinc-900 — sidebar, topbar, chat panel */
+  --bg-inset: #0a0a0a;      /* near-black inputs, toggles */
+  --slate-950: #030712;     /* card gradient origin */
+  --slate-900: #0f172a;     /* card gradient terminus */
+
+  /* Card surface = signature glass gradient */
+  --surface-card: linear-gradient(150deg, rgba(3, 7, 18, 0.95), rgba(15, 23, 42, 0.88));
+  --surface-card-strong: linear-gradient(155deg, rgba(3, 7, 18, 0.96), rgba(15, 23, 42, 0.90));
+  --surface-inner: rgba(24, 24, 27, 0.45);   /* zinc-900/45 nested tiles */
+  --surface-well: rgba(9, 9, 11, 0.60);      /* zinc-950/60 wells, asides */
+
+  /* ---- Borders / hairlines ---- */
+  --border-strong: #27272a;            /* zinc-800 */
+  --border-card: rgba(63, 63, 70, 0.70);   /* zinc-700/70 — default card border */
+  --border-subtle: rgba(255, 255, 255, 0.10);
+  --border-hairline: rgba(255, 255, 255, 0.05);
+  --border-focus: var(--blue-400);
+
+  /* ---- Foreground / text ---- */
+  --fg1: #f4f4f5;   /* zinc-100 — primary headings, values */
+  --fg2: #e4e4e7;   /* zinc-200 — wordmark light half, strong body */
+  --fg3: #d4d4d8;   /* zinc-300 — body copy, table cells */
+  --fg4: #a1a1aa;   /* zinc-400 — secondary / muted */
+  --fg5: #71717a;   /* zinc-500 — eyebrows, labels, captions */
+  --fg6: #52525b;   /* zinc-600 — faint meta, disabled */
+
+  /* ---- Semantic status (border / fill / text triads use *-400/40, *-500/15, *-100) ---- */
+  --ok: #10b981;        --ok-bright: #34d399;   --ok-text: #d1fae5;   /* emerald — on-time, on-target, quality */
+  --risk: #f43f5e;      --risk-bright: #fb7185;  --risk-text: #ffe4e6;  /* rose — CPT risk, deadlined, below target */
+  --warn: #f59e0b;      --warn-bright: #fbbf24;  --warn-text: #fef3c7;  /* amber — watch, reserved, at-risk */
+  --info: #3b82f6;      --info-bright: #60a5fa;  --info-text: #dbeafe;  /* blue — occupied, watch, neutral active */
+  --above: #22d3ee;     --above-bright: #38bdf8; --above-text: #cffafe; /* cyan/sky — above target, throughput */
+  --accent-violet: #8b5cf6;
+  --accent-orange: #f97316;
+
+  /* Chart series (in source order on the live trend board) */
+  --chart-1: #38bdf8;   /* sky  — order volume / flow */
+  --chart-2: #34d399;   /* emerald — labor / capacity */
+  --chart-3: #fb7185;   /* rose — CPT risk */
+  --chart-4: #f59e0b;   /* amber — YMS / backlog */
+
+  /* ---- Type families ---- */
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", "Cascadia Code", monospace;
+
+  /* ---- Radii ---- */
+  --r-sm: 0.5rem;    /* 8px  — nav items, inputs, buttons, small chips */
+  --r-md: 0.75rem;   /* 12px — nested tiles, panels-within-panels */
+  --r-lg: 1rem;      /* 16px — primary cards & panels (rounded-2xl) */
+  --r-full: 9999px;  /* badges, pills, toggles, avatars */
+
+  /* ---- Elevation ---- */
+  --shadow-card: 0 20px 50px -22px rgba(2, 6, 23, 0.9);
+  --shadow-card-hover: 0 30px 65px -24px rgba(37, 99, 235, 0.48);  /* blue lift glow */
+  --shadow-launcher: 0 10px 30px -6px rgba(30, 58, 138, 0.5);
+
+  /* ---- Spacing scale (Tailwind-derived 4px base) ---- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-3: 0.75rem;  --space-4: 1rem;
+  --space-5: 1.25rem;  --space-6: 1.5rem;  --space-8: 2rem;     --space-10: 2.5rem;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 220ms;
+  --dur-med: 500ms;
+}
+
+/* ============================================================================
+   SEMANTIC TYPE STYLES
+   tracking-tighter on big display; uppercase wide-tracked eyebrows; light
+   subheads. Apply these classes or copy the declarations.
+   ========================================================================== */
+
+.bl-display {            /* hero wordmark scale */
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(3.5rem, 8vw, 8rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--fg2);
+}
+
+.bl-h1 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.875rem;   /* 30px */
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fg1);
+}
+
+.bl-h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.25rem;    /* 20px */
+  line-height: 1.3;
+  color: var(--fg1);
+}
+
+.bl-h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.125rem;   /* 18px */
+  color: var(--fg1);
+}
+
+.bl-metric {             /* big KPI value */
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.875rem;   /* 30px */
+  line-height: 1;
+  color: var(--fg1);
+}
+
+.bl-subtitle {           /* hero / section subhead */
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--fg3);
+}
+
+.bl-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;   /* 14px */
+  line-height: 1.55;
+  color: var(--fg3);
+}
+
+.bl-eyebrow {            /* uppercase wide label above values / sections */
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.75rem;    /* 12px */
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--fg5);
+}
+
+.bl-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--fg4);
+}
+
+.bl-mono {               /* IDs, codes, snapshot timestamps */
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--fg3);
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "created": "2026-05-31T20:58:53.217Z",
+  "modified": "2026-05-31T21:01:01.704Z",
+  "objects": [
+    {
+      "id": "cjbj6a25k",
+      "type": "text",
+      "x": 145,
+      "y": 449.7578125,
+      "data": {
+        "content": "Blue",
+        "fontSize": 16,
+        "color": "#2D7DD2",
+        "bold": false
+      },
+      "width": 32,
+      "height": 21
+    },
+    {
+      "id": "26qbu4tia",
+      "type": "sticky",
+      "x": 228,
+      "y": 649.7578125,
+      "width": 150,
+      "height": 150,
+      "data": {
+        "content": "",
+        "color": "yellow"
+      }
+    },
+    {
+      "id": "eqaxuzq2o",
+      "type": "text",
+      "x": 176,
+      "y": 449.7578125,
+      "data": {
+        "content": "LineOps",
+        "fontSize": 16,
+        "color": "#000000",
+        "bold": false
+      },
+      "width": 58,
+      "height": 21
+    }
+  ]
+}

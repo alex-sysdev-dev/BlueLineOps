@@ -9,7 +9,7 @@ export default function RequestAccessForm() {
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
-  const [accessNeed, setAccessNeed] = useState('Pilot workspace')
+  const [accessNeed, setAccessNeed] = useState('View-only demo access')
   const [teamSize, setTeamSize] = useState('')
   const [requestReason, setRequestReason] = useState('')
   const [newsletterOptIn, setNewsletterOptIn] = useState(true)
@@ -49,7 +49,7 @@ export default function RequestAccessForm() {
       setEmail('')
       setCompany('')
       setRole('')
-      setAccessNeed('Pilot workspace')
+      setAccessNeed('View-only demo access')
       setTeamSize('')
       setRequestReason('')
       setNewsletterOptIn(true)
@@ -149,10 +149,10 @@ export default function RequestAccessForm() {
                   onChange={(event) => setAccessNeed(event.target.value)}
                   className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 transition-colors focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30"
                 >
-                  <option>Pilot workspace</option>
-                  <option>Owner review</option>
-                  <option>Operations team access</option>
-                  <option>Vendor or partner review</option>
+                  <option>View-only demo access</option>
+                  <option>View-only executive review</option>
+                  <option>View-only operations review</option>
+                  <option>View-only partner review</option>
                 </select>
               </div>
 

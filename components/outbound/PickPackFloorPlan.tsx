@@ -11,6 +11,7 @@ type Props = {
   layoutData: FacilityLayoutData
   data: OutboundFloorData
   associates: AssociatePerformanceRow[]
+  readOnly?: boolean
 }
 
 type StationAssignment = {
@@ -243,7 +244,7 @@ function stationForItem(item: FacilityLayoutItem, data: OutboundFloorData): stri
   return item.item_label.replaceAll('_', ' ')
 }
 
-export default function PickPackFloorPlan({ layoutData, data, associates }: Props) {
+export default function PickPackFloorPlan({ layoutData, data, associates, readOnly = false }: Props) {
   const firstWorkstationCode = layoutData.items.find((item) => item.item_type === 'pick_block' || item.item_type === 'pack_block')?.item_code ?? null
   const [selectedItemCode, setSelectedItemCode] = useState<string | null>(firstWorkstationCode)
   const [assignments, setAssignments] = useState(() => buildAssignments(data, associates))
@@ -261,6 +262,10 @@ export default function PickPackFloorPlan({ layoutData, data, associates }: Prop
     null
 
   function moveAssociate(associateId: string, station: string) {
+    if (readOnly) {
+      return
+    }
+
     setAssignments((current) =>
       current.map((assignment) => (assignment.associateId === associateId ? { ...assignment, station } : assignment))
     )
@@ -376,12 +381,19 @@ export default function PickPackFloorPlan({ layoutData, data, associates }: Prop
             </button>
           </div>
 
+          {readOnly ? (
+            <div className="mt-5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
+              View-only users can inspect floor assignments but cannot reassign associates.
+            </div>
+          ) : null}
+
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="text-sm font-medium text-zinc-300">
               Move associate to
               <select
                 value={selectedAssignment.station}
                 onChange={(event) => moveAssociate(selectedAssignment.associateId, event.target.value)}
+                disabled={readOnly}
                 className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-blue-400 sm:w-64"
               >
                 {destinationOptions.map((station) => (

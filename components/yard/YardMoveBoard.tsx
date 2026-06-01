@@ -19,6 +19,7 @@ type Props = {
   spots: NormalizedYardSpot[]
   trailers: TrailerRow[]
   orders: OrderRow[]
+  readOnly?: boolean
 }
 
 const DRIVERS = ['Shag 11 - R. Miles', 'Shag 14 - T. Nguyen', 'Shag 22 - M. Sloan', 'Shag 31 - J. Carter']
@@ -38,7 +39,7 @@ function labelize(value: string): string {
     .join(' ')
 }
 
-export default function YardMoveBoard({ spots, trailers, orders }: Props) {
+export default function YardMoveBoard({ spots, trailers, orders, readOnly = false }: Props) {
   const openOrders = orders.filter((order) => {
     const status = order.status?.toLowerCase() ?? ''
     return !['cancel', 'close', 'complete', 'ship', 'deliver'].some((token) => status.includes(token))
@@ -85,6 +86,10 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
   }
 
   function createMove() {
+    if (readOnly) {
+      return
+    }
+
     if (!selectedTrailer || !trailerCurrentSpot || !destinationSpotId) {
       return
     }
@@ -103,6 +108,10 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
   }
 
   function advanceMove(move: YardMove) {
+    if (readOnly) {
+      return
+    }
+
     if (move.status === 'completed') {
       return
     }
@@ -132,7 +141,11 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
         <div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="text-xl font-semibold text-zinc-100">Interactive Yard Move Board</h2>
-            <div className="text-sm text-zinc-400">Click a dock door or yard spot, then choose a trailer and destination.</div>
+            <div className="text-sm text-zinc-400">
+              {readOnly
+                ? 'Review mode: yard spots are clickable for inspection; move creation is disabled.'
+                : 'Click a dock door or yard spot, then choose a trailer and destination.'}
+            </div>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
@@ -161,6 +174,11 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
 
         <aside className="rounded-2xl border border-zinc-700/70 bg-zinc-950/60 p-5">
           <h3 className="text-lg font-semibold text-zinc-100">Move Control</h3>
+          {readOnly ? (
+            <div className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100">
+              View-only users can inspect yard state but cannot create or advance moves.
+            </div>
+          ) : null}
 
           <div className="mt-4 space-y-4">
             <label className="block text-sm font-medium text-zinc-300">
@@ -168,6 +186,7 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
               <select
                 value={selectedTrailer?.id ?? ''}
                 onChange={(event) => setSelectedTrailerId(event.target.value)}
+                disabled={readOnly}
                 className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-blue-400"
               >
                 <option value="">Choose trailer</option>
@@ -184,6 +203,7 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
               <select
                 value={destinationSpotId}
                 onChange={(event) => setDestinationSpotId(event.target.value)}
+                disabled={readOnly}
                 className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-blue-400"
               >
                 <option value="">Choose dock door or yard spot</option>
@@ -202,6 +222,7 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
               <select
                 value={driver}
                 onChange={(event) => setDriver(event.target.value)}
+                disabled={readOnly}
                 className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-blue-400"
               >
                 {DRIVERS.map((driverName) => (
@@ -215,10 +236,10 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
             <button
               type="button"
               onClick={createMove}
-              disabled={!selectedTrailer || !destinationSpotId}
+              disabled={readOnly || !selectedTrailer || !destinationSpotId}
               className="w-full rounded-lg border border-blue-400/40 bg-blue-500/15 px-4 py-2 text-sm font-semibold text-blue-100 transition-colors hover:bg-blue-500/25 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Create Move
+              {readOnly ? 'View Only' : 'Create Move'}
             </button>
           </div>
 
@@ -276,7 +297,7 @@ export default function YardMoveBoard({ spots, trailers, orders }: Props) {
                       <button
                         type="button"
                         onClick={() => advanceMove(move)}
-                        disabled={move.status === 'completed'}
+                        disabled={readOnly || move.status === 'completed'}
                         className="rounded-lg border border-zinc-600/70 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-800 disabled:opacity-40"
                       >
                         {move.status === 'pending' ? 'Start' : move.status === 'in_progress' ? 'Complete' : 'Done'}

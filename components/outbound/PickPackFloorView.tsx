@@ -13,6 +13,10 @@ import { getFacilityLayoutData } from '@/lib/queries/layouts'
 import { getAssociateCurrentPerformance } from '@/lib/queries/associates'
 import type { PackStationStatus } from '@/types/outbound'
 
+type Props = {
+  readOnly?: boolean
+}
+
 function stationStatusBadge(status: PackStationStatus): string {
   if (status === 'active') {
     return 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
@@ -44,7 +48,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
 
-export default async function PickPackFloorView() {
+export default async function PickPackFloorView({ readOnly = false }: Props) {
   const [data, layoutData, associates] = await Promise.all([
     getOutboundFloorData(),
     getFacilityLayoutData('pick_pack_main'),
@@ -113,7 +117,7 @@ export default async function PickPackFloorView() {
       />
 
       {layoutData.layout && layoutData.items.length > 0 ? (
-        <PickPackFloorPlan layoutData={layoutData} data={data} associates={associates} />
+        <PickPackFloorPlan layoutData={layoutData} data={data} associates={associates} readOnly={readOnly} />
       ) : (
         <PickPackMap
           cells={heatCells}

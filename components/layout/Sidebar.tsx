@@ -12,6 +12,7 @@ type AssociateLink = {
 
 type Props = {
   associateLinks?: AssociateLink[]
+  accessRole?: "admin" | "viewer"
 }
 
 const links = [
@@ -28,7 +29,7 @@ const links = [
   { name: "Forecasting", href: "/forecasting" },
 ]
 
-export default function Sidebar({ associateLinks = [] }: Props) {
+export default function Sidebar({ associateLinks = [], accessRole = "admin" }: Props) {
   const pathname = usePathname()
   const onAssociatesSection = pathname.startsWith("/associates")
   const [associatesOpen, setAssociatesOpen] = useState(onAssociatesSection)
@@ -58,6 +59,12 @@ export default function Sidebar({ associateLinks = [] }: Props) {
             </span>
           </div>
         </Link>
+
+        {accessRole === "viewer" ? (
+          <div className="mx-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
+            View-only
+          </div>
+        ) : null}
 
         <nav className="space-y-1 px-4 mt-2 flex-1 overflow-y-auto pb-4">
           {links.map((link) => {

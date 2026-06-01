@@ -11,6 +11,8 @@ type LoginFormProps = {
   initialMode: LoginMode
   initialNextPath: string
   initialMessage: string | null
+  initialName?: string
+  initialEmail?: string
 }
 
 function normalizeNextPath(value: string): string {
@@ -40,10 +42,16 @@ function passwordMeetsMinimum(value: string): boolean {
   return value.length >= 8
 }
 
-export default function LoginForm({ initialMode, initialNextPath, initialMessage }: LoginFormProps) {
+export default function LoginForm({
+  initialMode,
+  initialNextPath,
+  initialMessage,
+  initialName = '',
+  initialEmail = '',
+}: LoginFormProps) {
   const [mode, setMode] = useState<LoginMode>(initialMode)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [name, setName] = useState(initialName)
+  const [email, setEmail] = useState(initialEmail)
   const [phone, setPhone] = useState('')
   const [company, setCompany] = useState('')
   const [occupation, setOccupation] = useState('')
@@ -251,6 +259,20 @@ export default function LoginForm({ initialMode, initialNextPath, initialMessage
           {!isContact ? <p className="text-sm text-zinc-300 mb-6 tracking-wide">{modeDescription(mode)}</p> : null}
 
           <form onSubmit={handleSubmit} className={`flex flex-col ${isContact ? 'gap-5' : 'gap-4'}`}>
+            {!isContact && name ? (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] uppercase tracking-widest text-zinc-300">Name</label>
+                <input
+                  type="text"
+                  suppressHydrationWarning
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Your name"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-50 placeholder-zinc-400 transition-colors focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30"
+                />
+              </div>
+            ) : null}
+
             {isContact ? (
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] uppercase tracking-widest text-zinc-300">Name</label>

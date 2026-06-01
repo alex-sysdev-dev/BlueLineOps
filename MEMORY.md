@@ -149,3 +149,28 @@
 **What was decided:** Keep Contact Sales at `/login?mode=contact`, move Request Access to `/request-access`, give it its own form, API route, Supabase table, and Resend email template, and make Contact Sales use case optional.
 **Why:** Request Access and Contact Sales are different intents. Access requests need approval context, while Contact Sales should stay focused on sales follow-up and optional operating context.
 **What was rejected:** Reusing the Contact Sales form for Request Access was rejected because it makes the product path unclear and mixes prospect intent with access-control workflow.
+
+## 2026-05-31, Request Access confirmation email uses prefilled platform link
+**What was decided:** Send a branded Request Access confirmation email to the requester and make its Explore Platform button link to `/login?mode=login` with the requester's name and email in query parameters.
+**Why:** The requester should get a polished confirmation and a low-friction return path to the BlueLineOps login page after access review.
+**What was rejected:** Sending only the internal Request Access notification was rejected because it leaves the requester without a branded next step.
+
+## 2026-05-31, Request Access options are view-only
+**What was decided:** Rename Request Access dropdown options to `View-only demo access`, `View-only executive review`, `View-only operations review`, and `View-only partner review`.
+**Why:** Request Access is intended as view-only review access, not edit/admin access or automatic account provisioning.
+**What was rejected:** Broader labels such as `Pilot workspace` and `Operations team access` were rejected because they could imply more than view-only access.
+
+## 2026-05-31, View-only role reuses live pages
+**What was decided:** Add a `viewer` access role using `VIEW_ONLY_ACCESS_EMAILS`, allow viewer users into existing protected app pages, show view-only UI labels, and disable local move/reassignment controls.
+**Why:** Review users should be able to click the live dashboards, tiles, sidebar links, yard, and floor views without changing operational state.
+**What was rejected:** Creating separate duplicated review pages was rejected because maintaining two versions of every operational page would create drift and unnecessary work.
+
+## 2026-06-01, Media bundle served from public folder
+**What was decided:** Copy the added `BlueLineOps Media` bundle into `public/blue-lineops-media` and link to it from the landing-page CTA panel.
+**Why:** Next.js and Vercel only serve static browser files from `public`, so the root-level folder would not be reachable as a public media link.
+**What was rejected:** Linking directly to the root-level `BlueLineOps Media` folder was rejected because it would work locally as a file path only, not as a deployed site URL.
+
+## 2026-06-01, Local developer platform bypass
+**What was decided:** Add `LOCAL_DEV_PLATFORM_ACCESS=true` as a non-production-only bypass that lets the developer review protected app pages as admin without completing the Supabase magic-link flow.
+**Why:** Alexander needs fast local review access while building, and his developer review should not depend on waiting for email auth every time.
+**What was rejected:** Removing auth from protected pages or making the bypass work in production was rejected because production access must stay controlled by Supabase session and allowlisted emails.

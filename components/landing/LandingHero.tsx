@@ -173,7 +173,7 @@ export default function LandingHero() {
               Execution Breakdowns Cost Time, Labor, and Revenue.
             </p>
             <p className="mt-2 text-[13px] leading-6 text-zinc-300 sm:text-sm">
-              Most fulfillment operations run on fragmented systems, delayed reporting, and disconnected data. By the time a problem surfaces, it's already affecting service levels.
+              Most fulfillment operations run on fragmented systems, delayed reporting, and disconnected data. By the time a problem surfaces, it&apos;s already affecting service levels.
             </p>
             <p className="mt-4 text-[11px] font-semibold uppercase leading-5 tracking-[0.18em] text-emerald-300 sm:text-xs">
               BlueLineOps Command View
@@ -261,35 +261,36 @@ export default function LandingHero() {
             ))}
           </div>
 
-          {/* Enterprise Login */}
+          {/* Access banner */}
           <div className={[s.fadeUp, s.d050, 'pointer-events-auto self-end lg:order-none'].join(' ')}>
-            <Link href="/login?mode=enterprise">
-              <button
-                type="button"
+            <div className="flex w-full items-center gap-2 rounded-2xl border border-blue-500/35 bg-black/72 p-2 shadow-[0_0_32px_rgba(59,130,246,0.16)] backdrop-blur-md sm:w-auto">
+              <Link
+                href="/login?mode=enterprise"
                 className="
-                  group relative isolate overflow-hidden
-                  rounded-xl border border-blue-500/50
-                  bg-black/70 backdrop-blur-md
-                  px-6 py-3.5
-                  text-sm font-semibold tracking-[0.15em] uppercase text-blue-100
-                  transition-all duration-300
-                  hover:border-blue-400/80 hover:bg-blue-950/50
-                  hover:shadow-[0_0_40px_rgba(59,130,246,0.4)]
-                  hover:-translate-y-1 active:scale-[0.98] cursor-pointer
-                  flex w-full flex-col items-center gap-1.5 sm:w-auto
+                  group relative isolate flex flex-1 items-center justify-center gap-2 overflow-hidden
+                  rounded-xl border border-blue-500/50 bg-blue-600/15 px-4 py-3
+                  text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-100
+                  transition-all duration-300 hover:border-blue-300/80 hover:bg-blue-600/28
+                  sm:flex-none sm:px-5
                 "
               >
                 <span className={[
                   s.shimmerLayer,
                   'pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
                 ].join(' ')} />
-                <svg className="relative z-10 h-4 w-4 opacity-60 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <svg className="relative z-10 h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <rect x="3" y="11" width="18" height="11" rx="2"/>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
                 <span className="relative z-10">Enterprise Login</span>
-              </button>
-            </Link>
+              </Link>
+              <Link
+                href="/blue-lineops-media/BlueLineOps%20Media.html"
+                className="flex flex-1 items-center justify-center rounded-xl border border-zinc-700/80 bg-black/60 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-200 transition hover:border-blue-300/70 hover:bg-blue-500/15 hover:text-blue-100 sm:flex-none sm:px-5"
+              >
+                Media
+              </Link>
+            </div>
           </div>
 
           {/* Intelligence Layer */}

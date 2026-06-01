@@ -47,6 +47,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const mode = resolveMode(firstParam(params.mode))
   const nextPath = firstParam(params.next) ?? '/dashboard'
   const message = resolveMessage(firstParam(params.status), firstParam(params.error))
+  const initialName = firstParam(params.name) ?? ''
+  const initialEmail = firstParam(params.email) ?? ''
 
-  return <LoginForm initialMode={mode} initialNextPath={nextPath} initialMessage={message} />
+  return (
+    <LoginForm
+      initialMode={mode}
+      initialNextPath={nextPath}
+      initialMessage={message}
+      initialName={initialName}
+      initialEmail={initialEmail}
+    />
+  )
 }

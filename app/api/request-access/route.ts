@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { serverSupabase } from '@/lib/supabase-server'
-import { buildRequestAccessEmail } from '@/lib/email/request-access-template'
+import { buildRequestAccessConfirmationEmail, buildRequestAccessEmail } from '@/lib/email/request-access-template'
 
 type RequestAccessPayload = {
   name?: unknown
@@ -111,6 +111,40 @@ export async function POST(request: NextRequest) {
     const errorPayload = (await response.json().catch(() => null)) as { message?: string } | null
     return NextResponse.json(
       { message: errorPayload?.message ?? 'Could not send access request.' },
+      { status: 502 }
+    )
+  }
+
+  const confirmationEmail = buildRequestAccessConfirmationEmail({
+    name,
+    email,
+    company,
+    role,
+    accessNeed,
+    teamSize,
+    requestReason,
+    newsletterOptIn,
+  })
+
+  const confirmationResponse = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [email],
+      subject: confirmationEmail.subject,
+      text: confirmationEmail.text,
+      html: confirmationEmail.html,
+    }),
+  })
+
+  if (!confirmationResponse.ok) {
+    const errorPayload = (await confirmationResponse.json().catch(() => null)) as { message?: string } | null
+    return NextResponse.json(
+      { message: errorPayload?.message ?? 'Access request saved, but confirmation email could not be sent.' },
       { status: 502 }
     )
   }

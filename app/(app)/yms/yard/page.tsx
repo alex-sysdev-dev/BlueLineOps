@@ -7,6 +7,9 @@ import type { NormalizedYardSpot, YardSpotStatus } from '@/types/yms'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
 import { getFacilityLayoutData } from '@/lib/queries/layouts'
+import { getAppAccessRoleForEmail } from '@/lib/enterprise-access'
+import { createSupabaseAuthServerClient } from '@/lib/supabase-auth-server'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,6 +105,15 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export default async function YmsYardPage() {
+  const cookieStore = await cookies()
+  const supabase = createSupabaseAuthServerClient(
+    () => cookieStore.getAll(),
+    () => {}
+  )
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const accessRole = getAppAccessRoleForEmail(user?.email) ?? 'viewer'
   const [{ yardSpots: yardSpotRows, trailers, orders }, layoutData] = await Promise.all([
     getYmsDashboardData(),
     getFacilityLayoutData('yard_main'),
@@ -198,7 +210,7 @@ export default async function YmsYardPage() {
         <YardLayoutPlan layoutData={layoutData} yardSpots={yardSpotRows} />
       ) : null}
 
-      <YardMoveBoard spots={yardSpots} trailers={trailers} orders={orders} />
+      <YardMoveBoard spots={yardSpots} trailers={trailers} orders={orders} readOnly={accessRole === 'viewer'} />
 
       {groupedSpots.map(({ dockGroup, spots }) => {
         const title = DOCK_GROUP_LABEL[dockGroup]
