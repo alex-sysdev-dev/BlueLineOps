@@ -250,7 +250,7 @@ function Leadership() {
             and diagnosed the failures — then built the software to fix them.”
           </blockquote>
           <div className="bl-lead-meta">
-            <span><em>FOR INTERVIEWS</em>press@axiomops.com</span>
+            <span><em>FOR INTERVIEWS</em>xpertmarxman@gmail.com</span>
             <span><em>BASED IN</em>Las Vegas, NV</span>
           </div>
         </div>
