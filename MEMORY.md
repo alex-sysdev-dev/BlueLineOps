@@ -174,3 +174,23 @@
 **What was decided:** Add `LOCAL_DEV_PLATFORM_ACCESS=true` as a non-production-only bypass that lets the developer review protected app pages as admin without completing the Supabase magic-link flow.
 **Why:** Alexander needs fast local review access while building, and his developer review should not depend on waiting for email auth every time.
 **What was rejected:** Removing auth from protected pages or making the bypass work in production was rejected because production access must stay controlled by Supabase session and allowlisted emails.
+
+## 2026-06-02, Associate duplicate names render as generated display names
+**What was decided:** Treat repeated associate source names as demo placeholders and generate stable display names from each associate ID for roster, sidebar, and performance panels.
+**Why:** The live associate rows can return the same `full_name` for many different associate IDs, which makes different photos appear under one repeated name.
+**What was rejected:** Editing the Supabase data directly was rejected because this request only needs the local dashboard display corrected.
+
+## 2026-06-02, Local developer access grants admin on workflow pages
+**What was decided:** Make `/outbound/floor` and `/yms/yard` honor `LOCAL_DEV_PLATFORM_ACCESS=true` as an admin role instead of falling back to viewer.
+**Why:** The app layout already allowed local developer admin access, but those two workflow pages calculated role separately and kept move controls read-only.
+**What was rejected:** Expanding production access was rejected because production should still use Supabase session email allowlists.
+
+## 2026-06-02, Generated floor-plan associate IDs do not open detail pages
+**What was decided:** Make demo/generated floor assignments link back to `/associates` and redirect direct `EMP-####` associate URLs to the associates dashboard.
+**Why:** The floor plan can create placeholder employee IDs such as `EMP-4100` when no real current-performance associate row is available, and those IDs are not valid detail records.
+**What was rejected:** Creating fake detail pages for generated IDs was rejected because the real roster should stay tied to actual associate records.
+
+## 2026-06-02, Media page updated from June press and AI video bundle
+**What was decided:** Copy the `press update and video ai june 1` static media bundle into `public/blue-lineops-media`.
+**Why:** The deployed media page must use the updated press page, newsroom imagery, and agent workflow video assets from the latest AxiomOpsDocs folder.
+**What was rejected:** Linking to the external `AxiomOpsDocs` folder was rejected because Next.js and Vercel only serve the public copy.

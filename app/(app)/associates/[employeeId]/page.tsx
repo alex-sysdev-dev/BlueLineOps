@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import KpiTile from '@/components/kpi/KpiTile'
 import { buildAssociateDirectoryRows, generateMockData, synthesizePerformanceRows } from '@/lib/calculations/associates'
 import { getAssociateCurrentPerformance, getAssociateSkillMatrix } from '@/lib/queries/associates'
@@ -49,6 +49,10 @@ export default async function AssociateDetailPage({ params }: Props) {
   const associate = rows.find((row) => row.employeeId === decodeURIComponent(employeeId))
 
   if (!associate) {
+    if (/^EMP-\d+$/i.test(decodeURIComponent(employeeId))) {
+      redirect('/associates')
+    }
+
     notFound()
   }
 

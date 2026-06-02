@@ -1,5 +1,5 @@
 import PickPackFloorView from '@/components/outbound/PickPackFloorView'
-import { getAppAccessRoleForEmail } from '@/lib/enterprise-access'
+import { getAppAccessRoleForEmail, isLocalDevPlatformAccessEnabled } from '@/lib/enterprise-access'
 import { createSupabaseAuthServerClient } from '@/lib/supabase-auth-server'
 import { cookies } from 'next/headers'
 
@@ -14,7 +14,7 @@ export default async function Page() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const accessRole = getAppAccessRoleForEmail(user?.email) ?? 'viewer'
+  const accessRole = isLocalDevPlatformAccessEnabled() ? 'admin' : getAppAccessRoleForEmail(user?.email) ?? 'viewer'
 
   return <PickPackFloorView readOnly={accessRole === 'viewer'} />
 }

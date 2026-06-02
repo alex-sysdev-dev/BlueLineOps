@@ -21,6 +21,7 @@ type StationAssignment = {
   station: string
   uph: number
   department: 'Pick' | 'Pack'
+  detailHref: string
 }
 
 function splitByHalf<T>(rows: T[]): { west: T[]; east: T[] } {
@@ -228,6 +229,7 @@ function buildAssignments(data: OutboundFloorData, associates: AssociatePerforma
       station,
       uph: source?.uph ?? target + ((index % 5) - 2) * 3,
       department: index < pickStationNames.length ? 'Pick' : 'Pack',
+      detailHref: source ? `/associates/${encodeURIComponent(employeeId)}` : '/associates',
     }
   })
 }
@@ -405,10 +407,10 @@ export default function PickPackFloorPlan({ layoutData, data, associates, readOn
             </label>
 
             <Link
-              href={`/associates/${encodeURIComponent(selectedAssignment.employeeId)}`}
+              href={selectedAssignment.detailHref}
               className="rounded-lg border border-blue-400/40 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-100 transition-colors hover:bg-blue-500/20"
             >
-              Open Associate Details
+              {selectedAssignment.detailHref === '/associates' ? 'Open Associates Dashboard' : 'Open Associate Details'}
             </Link>
           </div>
         </section>

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created": "2026-05-31T20:58:53.217Z",
-  "modified": "2026-05-31T21:01:01.704Z",
+  "modified": "2026-06-01T01:33:08.837Z",
   "objects": [
     {
       "id": "cjbj6a25k",
@@ -20,12 +20,12 @@
     {
       "id": "26qbu4tia",
       "type": "sticky",
-      "x": 228,
-      "y": 649.7578125,
+      "x": 526,
+      "y": 181.7578125,
       "width": 150,
       "height": 150,
       "data": {
-        "content": "",
+        "content": "media page",
         "color": "yellow"
       }
     },
@@ -42,6 +42,45 @@
       },
       "width": 58,
       "height": 21
+    },
+    {
+      "id": "e2m9ekkxl",
+      "type": "line",
+      "x": 247,
+      "y": 451.66666412353516,
+      "endX": 360,
+      "endY": 439.66666412353516,
+      "data": {
+        "fill": null,
+        "stroke": "#2D7DD2",
+        "strokeWidth": 2
+      }
+    },
+    {
+      "id": "hwh87q2d7",
+      "type": "rect",
+      "x": 455,
+      "y": 358.3333307902018,
+      "width": 1333,
+      "height": 643,
+      "data": {
+        "fill": null,
+        "stroke": "#2D7DD2",
+        "strokeWidth": 2
+      }
+    },
+    {
+      "id": "kedhncac0",
+      "type": "ellipse",
+      "x": 936,
+      "y": 518.3333307902018,
+      "width": 376,
+      "height": 356,
+      "data": {
+        "fill": null,
+        "stroke": "#2D7DD2",
+        "strokeWidth": 2
+      }
     }
   ]
 }

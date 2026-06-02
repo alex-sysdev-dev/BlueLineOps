@@ -7,7 +7,7 @@ import type { NormalizedYardSpot, YardSpotStatus } from '@/types/yms'
 import { normalizeYardSpots, summarizeYard } from '@/lib/calculations/yms'
 import { getYmsDashboardData } from '@/lib/queries/yms'
 import { getFacilityLayoutData } from '@/lib/queries/layouts'
-import { getAppAccessRoleForEmail } from '@/lib/enterprise-access'
+import { getAppAccessRoleForEmail, isLocalDevPlatformAccessEnabled } from '@/lib/enterprise-access'
 import { createSupabaseAuthServerClient } from '@/lib/supabase-auth-server'
 import { cookies } from 'next/headers'
 
@@ -113,7 +113,7 @@ export default async function YmsYardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const accessRole = getAppAccessRoleForEmail(user?.email) ?? 'viewer'
+  const accessRole = isLocalDevPlatformAccessEnabled() ? 'admin' : getAppAccessRoleForEmail(user?.email) ?? 'viewer'
   const [{ yardSpots: yardSpotRows, trailers, orders }, layoutData] = await Promise.all([
     getYmsDashboardData(),
     getFacilityLayoutData('yard_main'),

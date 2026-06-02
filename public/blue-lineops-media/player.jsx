@@ -162,7 +162,10 @@ function CinematicPlayer({ film, opts, autoStart = false, posterTime = 2, label 
         {/* chapter caption bottom-left while playing */}
         <div className={'bl-cap' + (started ? ' show' : '')}>
           <span className="bl-cap-num">{chapter.label}</span>
-          <span className="bl-cap-title">{chapter.title}</span>
+          <span className="bl-cap-text">
+            <span className="bl-cap-title">{chapter.title}</span>
+            {chapter.desc && <span className="bl-cap-desc">{chapter.desc}</span>}
+          </span>
         </div>
 
         {/* transport */}

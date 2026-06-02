@@ -167,10 +167,12 @@
     color: var(--fg3); white-space: nowrap; }
 
   .bl-cap { position: absolute; left: 22px; bottom: 92px; z-index: 7; display: flex; align-items: baseline; gap: 12px;
-    opacity: 0; transform: translateY(8px); transition: all .4s var(--ease-out); }
+    opacity: 0; transform: translateY(8px); transition: all .4s var(--ease-out); max-width: 70%; }
   .bl-cap.show { opacity: 1; transform: none; }
   .bl-cap-num { font-family: var(--font-mono); font-size: 12px; color: var(--accent-hi); }
+  .bl-cap-text { display: flex; flex-direction: column; gap: 4px; }
   .bl-cap-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
+  .bl-cap-desc { font-size: 13px; font-weight: 300; line-height: 1.4; color: rgba(255,255,255,.72); text-shadow: 0 2px 14px rgba(0,0,0,.9); }
 
   .bl-transport { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; padding: 30px 18px 14px;
     background: linear-gradient(0deg, rgba(2,4,10,.92), transparent); opacity: 0; transform: translateY(10px);
@@ -284,6 +286,40 @@
 
   /* ============================ PRESS ============================ */
   .bl-press { border-top: 1px solid var(--border-hairline); }
+
+  /* newsroom feature */
+  .bl-news { display: grid; grid-template-columns: 200px 1fr; gap: 8px; align-items: stretch;
+    border: 1px solid var(--border-card); border-radius: var(--r-lg); overflow: hidden;
+    background: var(--surface-card-strong); box-shadow: var(--shadow-card);
+    margin-bottom: 56px; position: relative; }
+  .bl-news::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 100% at 0% 0%, rgba(var(--accent-r), .14), transparent 52%); }
+  .bl-news-rail { position: relative; display: grid; place-items: center;
+    border-right: 1px solid var(--border-hairline);
+    background: linear-gradient(160deg, rgba(var(--accent-r), .12), rgba(var(--accent-r), .02)); }
+  .bl-news-seal { display: grid; place-items: center; filter: drop-shadow(0 0 22px rgba(var(--accent-r), .35)); }
+  .bl-seal-spin { transform-origin: 60px 60px; animation: sealSpin 26s linear infinite; }
+  @keyframes sealSpin { to { transform: rotate(360deg); } }
+  .bl-news-body { padding: 32px 34px; position: relative; }
+  .bl-news-tags { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .bl-news-status { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--ok-bright); padding: 5px 11px; border-radius: 999px;
+    background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.4); }
+  .bl-news-status i { width: 6px; height: 6px; border-radius: 999px; background: var(--ok-bright);
+    box-shadow: 0 0 0 0 rgba(52,211,153,.6); animation: pulseDot 1.8s infinite; }
+  .bl-news-prog { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--accent-hi);
+    padding: 5px 11px; border-radius: 999px; background: rgba(var(--accent-r), .12); border: 1px solid rgba(var(--accent-r), .35); }
+  .bl-news-date { font-family: var(--font-mono); font-size: 11px; color: var(--fg5); margin-left: auto; }
+  .bl-news-title { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.85rem); font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1.12; color: var(--fg1); text-wrap: balance; }
+  .bl-news-text { margin: 16px 0 0; max-width: 680px; font-size: 15.5px; font-weight: 300; line-height: 1.65; color: var(--fg3); }
+  .bl-news-text b { color: var(--fg1); font-weight: 600; }
+  .bl-news-meta { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-hairline); }
+  .bl-news-meta span { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 12.5px; color: var(--fg2); }
+  .bl-news-meta em { font-style: normal; font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.16em; color: var(--fg5); }
+
+  .bl-press-subhead { margin-bottom: 28px; }
+  .bl-h-sm { font-size: clamp(1.4rem, 2.6vw, 2rem); }
   .bl-quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .bl-quote { margin: 0; padding: 28px; border-radius: var(--r-lg); border: 1px solid var(--border-card);
     background: var(--surface-card); display: flex; flex-direction: column; gap: 18px; transition: all .24s var(--ease-out); }

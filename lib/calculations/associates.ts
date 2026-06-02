@@ -69,14 +69,43 @@ function hash(value: string): number {
   return Array.from(value).reduce((sum, char) => sum + char.charCodeAt(0), 0)
 }
 
+function nameHash(value: string): number {
+  let result = 2166136261
+  for (const char of value) {
+    result ^= char.charCodeAt(0)
+    result = Math.imul(result, 16777619)
+  }
+  return result >>> 0
+}
+
 function fallbackFrom<T>(values: T[], seed: string): T {
   return values[hash(seed) % values.length]
 }
 
 function generateName(seed: string): string {
-  const first = FIRST_NAMES[hash(seed) % FIRST_NAMES.length]
-  const last = LAST_NAMES[hash(`${seed}-last`) % LAST_NAMES.length]
+  const first = FIRST_NAMES[nameHash(seed) % FIRST_NAMES.length]
+  const last = LAST_NAMES[nameHash(`${seed}-last`) % LAST_NAMES.length]
   return `${first} ${last}`
+}
+
+function nameKey(name: string): string {
+  return name.trim().toLowerCase()
+}
+
+function duplicateNameKeys(rows: { full_name: string }[]): Set<string> {
+  const counts = new Map<string, number>()
+
+  for (const row of rows) {
+    const key = nameKey(row.full_name)
+    if (!key) continue
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+
+  return new Set(
+    Array.from(counts.entries())
+      .filter(([, count]) => count > 1)
+      .map(([key]) => key)
+  )
 }
 
 function isPlaceholderName(name: string): boolean {
@@ -85,8 +114,8 @@ function isPlaceholderName(name: string): boolean {
   return false
 }
 
-function resolveName(rawName: string, seed: string): string {
-  return isPlaceholderName(rawName) ? generateName(seed) : rawName
+function resolveName(rawName: string, seed: string, duplicateNames = new Set<string>()): string {
+  return isPlaceholderName(rawName) || duplicateNames.has(nameKey(rawName)) ? generateName(seed) : rawName
 }
 
 function firstRole(row: AssociateSkillMatrixRow): string {
@@ -103,6 +132,7 @@ export function buildAssociateDirectoryRows(
   performanceRows: AssociatePerformanceRow[]
 ): AssociateDirectoryRow[] {
   const performanceByAssociate = new Map<string, AssociatePerformanceRow>()
+  const duplicateNames = duplicateNameKeys([...matrixRows, ...performanceRows])
 
   for (const row of performanceRows) {
     const current = performanceByAssociate.get(row.associate_id)
@@ -116,7 +146,7 @@ export function buildAssociateDirectoryRows(
     const seed = row.associate_id || row.employee_id || row.full_name
     const targetUph = performance?.target_uph ?? 82 + (hash(seed) % 22)
     const uph = performance?.uph ?? targetUph - 4 + (hash(`${seed}-uph`) % 15)
-    const resolvedName = resolveName(row.full_name, seed)
+    const resolvedName = resolveName(row.full_name, seed, duplicateNames)
 
     return {
       associateId: row.associate_id,
@@ -143,7 +173,7 @@ export function buildAssociateDirectoryRows(
       const seed = row.associate_id || row.employee_id || row.full_name
       const targetUph = row.target_uph ?? 88
       const uph = row.uph ?? targetUph
-      const resolvedName = resolveName(row.full_name, seed)
+      const resolvedName = resolveName(row.full_name, seed, duplicateNames)
 
       return {
         associateId: row.associate_id,
@@ -168,30 +198,34 @@ export function buildAssociateDirectoryRows(
 
 export function resolveAssociateLinks(matrixRows: AssociateSkillMatrixRow[]): { employeeId: string; fullName: string }[] {
   const source = matrixRows.length > 0 ? matrixRows : generateMockData().matrixRows
+  const duplicateNames = duplicateNameKeys(source)
   return source
     .map((row) => {
       const seed = row.associate_id || row.employee_id || row.full_name
       return {
         employeeId: row.employee_id,
-        fullName: resolveName(row.full_name, seed),
+        fullName: resolveName(row.full_name, seed, duplicateNames),
       }
     })
     .sort((a, b) => a.fullName.localeCompare(b.fullName))
 }
 
 export function normalizePerformanceNames(rows: AssociatePerformanceRow[]): AssociatePerformanceRow[] {
+  const duplicateNames = duplicateNameKeys(rows)
+
   return rows.map((row) => {
     const seed = row.associate_id || row.employee_id || row.full_name
-    return isPlaceholderName(row.full_name) ? { ...row, full_name: generateName(seed) } : row
+    return isPlaceholderName(row.full_name) || duplicateNames.has(nameKey(row.full_name)) ? { ...row, full_name: generateName(seed) } : row
   })
 }
 
 export function synthesizePerformanceRows(matrixRows: AssociateSkillMatrixRow[]): AssociatePerformanceRow[] {
   const today = new Date().toISOString().split('T')[0]
+  const duplicateNames = duplicateNameKeys(matrixRows)
 
   return matrixRows.map((row) => {
     const seed = row.associate_id || row.employee_id || row.full_name
-    const resolvedName = resolveName(row.full_name, seed)
+    const resolvedName = resolveName(row.full_name, seed, duplicateNames)
 
     const targetUph = 82 + (hash(seed) % 22)
     const uphOffset = (hash(`${seed}-uph`) % 32) - 8

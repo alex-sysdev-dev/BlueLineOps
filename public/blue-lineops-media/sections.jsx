@@ -12,8 +12,8 @@ function single(scene, title, dur) {
 }
 
 const MEDIA = [
-  { id: 'feature', cat: 'Product', title: 'The Operating Picture', runtime: '0:36', scene: 'globe', poster: 2.4,
-    blurb: 'The full BlueLineOps feature film — one connected view, from globe to floor.', feature: true },
+  { id: 'feature', cat: 'Product', title: 'The Platform, in Motion', runtime: '0:36', scene: 'globe', poster: 2.4,
+    blurb: 'The platform in one continuous shot — from a connected network of sites down to the floor and back to a single command view.', feature: true },
   { id: 'trend', cat: 'Product', title: 'Signals, Live', runtime: '0:31', scene: 'trend', poster: 1.6,
     blurb: 'How the live trend board turns raw throughput into a read you can act on.' },
   { id: 'floor', cat: 'Product', title: 'On the Floor', runtime: '0:35', scene: 'floor', poster: 1.2,
@@ -22,8 +22,8 @@ const MEDIA = [
     blurb: 'Every facility, dock, and yard as a single live operating graph.' },
   { id: 'peak', cat: 'Customers', title: 'Inside a Peak Shift', runtime: '0:48', scene: 'floor', poster: 2.0,
     blurb: 'A fulfillment leader walks a peak-season shift run entirely on BlueLineOps.' },
-  { id: 'briefed', cat: 'Customers', title: 'From Blind to Briefed', runtime: '0:39', scene: 'trend', poster: 0.9,
-    blurb: 'Replacing fragmented reports with one calm command view.' },
+  { id: 'agent', cat: 'Product', title: 'How the Agent Works', runtime: '0:36', scene: 'aj3', poster: 16, film: AGENT_FILM,
+    blurb: 'A single shot from chat to command view — the agent compiles your question to logic, verifies it, reads CPT risk, dock utilization, and labor hours, then pulls the live morning-CPT KPIs back into the UI.' },
   { id: 'keynote', cat: 'Events', title: 'Keynote 2026', runtime: '1:12', scene: 'close', poster: 0.85,
     blurb: 'The vision for operational intelligence — opening night, Ops Summit.' },
   { id: 'demo', cat: 'Events', title: 'Live Demo · Ops Summit', runtime: '0:54', scene: 'globe', poster: 1.4,
@@ -54,7 +54,7 @@ function Hero({ opts, onPlay, motion }) {
           <span><b>Blue</b>LineOps</span>
         </a>
         <nav className="bl-nav">
-          <a href="#feature">Feature Film</a>
+          <a href="#feature">Platform Film</a>
           <a href="#library">Library</a>
           <a href="#leadership">Leadership</a>
           <a href="#press">Press</a>
@@ -78,7 +78,7 @@ function Hero({ opts, onPlay, motion }) {
         <div className="bl-hero-cta">
           <button className="bl-play-cta" onClick={onPlay}>
             <span className="bl-play-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></span>
-            Play the Feature Film
+            Play the Platform Film
             <span className="bl-play-len">0:36</span>
           </button>
           <a className="bl-ghost-cta" href="#library">Browse the Library</a>
@@ -116,12 +116,12 @@ function Feature({ opts, playerKey }) {
   return (
     <section className="bl-section" id="feature">
       <div className="bl-sec-head">
-        <span className="bl-eyebrow" style={{ color: 'var(--accent)' }}>Feature Film</span>
-        <h2 className="bl-h">One connected view, in motion.</h2>
-        <p className="bl-lede">Six chapters — from a connected world to the floor to the live signals you run on. Scrub it; every frame is live.</p>
+        <span className="bl-eyebrow" style={{ color: 'var(--accent)' }}>Platform Film</span>
+        <h2 className="bl-h">See the whole platform work.</h2>
+        <p className="bl-lede">Six chapters that explain BlueLineOps end to end — from a connected network of sites, down to the floor, to the live signals you run on. Scrub it; every frame is real.</p>
       </div>
       <CinematicPlayer key={playerKey} film={FEATURE_FILM} opts={opts}
-        label="FEATURE" title="The Operating Picture" meta="FILM · 00:36 · 6 CHAPTERS" posterTime={8} />
+        label="PLATFORM" title="BlueLineOps — The Platform" meta="FILM · 00:36 · 6 CHAPTERS" posterTime={8} />
       <div className="bl-chaprail">
         {FEATURE_FILM.chapters.map((c) => (
           <div className="bl-chapcard" key={c.id}>
@@ -140,7 +140,7 @@ function Tile({ item, opts, onOpen }) {
   const [hover, setHover] = useState(false);
   const tRef = useRef(item.poster);
   const startRef = useRef(0);
-  const film = useRef(single(item.scene, item.title, 6)).current;
+  const film = useRef(item.film || single(item.scene, item.title, 6)).current;
   useEffect(() => {
     if (!hover) { tRef.current = item.poster; return; }
     startRef.current = performance.now();
@@ -156,7 +156,7 @@ function Tile({ item, opts, onOpen }) {
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
         </span>
         <span className="bl-tile-len">{item.runtime}</span>
-        {item.feature && <span className="bl-tile-feat">FEATURE</span>}
+        {item.feature && <span className="bl-tile-feat">PLATFORM</span>}
       </div>
       <div className="bl-tile-body">
         <span className="bl-tile-cat">{item.cat}</span>
@@ -199,7 +199,7 @@ function Lightbox({ item, opts, onClose }) {
     return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [onClose]);
   if (!item) return null;
-  const film = item.feature ? FEATURE_FILM : single(item.scene, item.title, 8);
+  const film = item.feature ? FEATURE_FILM : (item.film || single(item.scene, item.title, 8));
   return (
     <div className="bl-lightbox" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bl-lightbox-inner">
@@ -250,7 +250,7 @@ function Leadership() {
             and diagnosed the failures — then built the software to fix them.”
           </blockquote>
           <div className="bl-lead-meta">
-            <span><em>FOR INTERVIEWS</em>xpertmarxman@gmail.com</span>
+            <span><em>FOR INTERVIEWS</em>press@axiomops.com</span>
             <span><em>BASED IN</em>Las Vegas, NV</span>
           </div>
         </div>
@@ -272,8 +272,55 @@ function Press() {
   return (
     <section className="bl-section bl-press" id="press">
       <div className="bl-sec-head">
+        <span className="bl-eyebrow" style={{ color: 'var(--accent)' }}>Newsroom</span>
+        <h2 className="bl-h">The latest from AxiomOps.</h2>
+      </div>
+
+      <article className="bl-news">
+        <div className="bl-news-rail" aria-hidden="true">
+          <span className="bl-news-seal">
+            <svg viewBox="0 0 120 120" width="116" height="116">
+              <defs>
+                <linearGradient id="sealg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor="var(--accent-hi)" />
+                  <stop offset="1" stopColor="var(--accent)" />
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="1" />
+              <circle cx="60" cy="60" r="46" fill="none" stroke="url(#sealg)" strokeWidth="1.5" strokeDasharray="3 5" className="bl-seal-spin" />
+              <path d="M28 74 Q60 30 92 74" fill="none" stroke="url(#sealg)" strokeWidth="2" />
+              <circle cx="92" cy="74" r="3.5" fill="var(--accent-hi)" />
+              <path d="M40 78 L60 50 L80 78" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="1.5" />
+              <text x="60" y="98" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" letterSpacing="2" fill="rgba(255,255,255,.55)">SBIR · 2026</text>
+            </svg>
+          </span>
+        </div>
+        <div className="bl-news-body">
+          <div className="bl-news-tags">
+            <span className="bl-news-status"><i />Proposal Filed</span>
+            <span className="bl-news-prog">NASA SBIR · Phase I</span>
+            <span className="bl-news-date">April 2026</span>
+          </div>
+          <h3 className="bl-news-title">AxiomOps files a NASA SBIR proposal to develop agentic AI for defense supply chains.</h3>
+          <p className="bl-news-text">
+            AxiomOps — the company behind BlueLineOps — has submitted a Phase I Small Business
+            Innovation Research (SBIR) proposal to <b>NASA</b> to research and develop agentic,
+            verifiable AI for supply-chain and logistics operations in support of the
+            <b> U.S. Department of Defense</b>. The work extends the BlueLineOps operating picture
+            toward autonomous decision support for mission-critical logistics — retrieval-grounded,
+            guardrailed, and built to keep a human in the loop.
+          </p>
+          <div className="bl-news-meta">
+            <span><em>PROGRAM</em>NASA SBIR Phase I</span>
+            <span><em>FOCUS</em>Agentic AI · Defense Supply Chain</span>
+            <span><em>STATUS</em>Submitted · Under Review</span>
+          </div>
+        </div>
+      </article>
+
+      <div className="bl-press-subhead">
         <span className="bl-eyebrow" style={{ color: 'var(--accent)' }}>Press &amp; Coverage</span>
-        <h2 className="bl-h">What the floor is saying.</h2>
+        <h3 className="bl-h bl-h-sm">What the floor is saying.</h3>
       </div>
       <div className="bl-quotes">
         {QUOTES.map((x, i) => (
