@@ -120,8 +120,8 @@ export default function LandingHero() {
 
       getSupabaseAuthBrowserClient()
         .auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-        .then(({ error }) => {
-          window.location.replace(error ? '/login?mode=reset&error=callback' : nextPath)
+        .then((sessionResult: { error: unknown }) => {
+          window.location.replace(sessionResult.error ? '/login?mode=reset&error=callback' : nextPath)
         })
     }
   }, [])
