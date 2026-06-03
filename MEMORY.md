@@ -194,3 +194,8 @@
 **What was decided:** Copy the `press update and video ai june 1` static media bundle into `public/blue-lineops-media`.
 **Why:** The deployed media page must use the updated press page, newsroom imagery, and agent workflow video assets from the latest AxiomOpsDocs folder.
 **What was rejected:** Linking to the external `AxiomOpsDocs` folder was rejected because Next.js and Vercel only serve the public copy.
+
+## 2026-06-03, Landing page forwards Supabase recovery links
+**What was decided:** Add a root-page handler that detects Supabase password-recovery links landing on `/` with `code`, `token_hash`, or recovery hash tokens and forwards them into the existing `/auth/callback`, `/auth/confirm`, or `/login?mode=update-password&status=recovery` flow.
+**Why:** A Supabase reset-password email sent Alexander back to the landing page, which left the recovery session unused and blocked password reset.
+**What was rejected:** Replacing the whole login flow or weakening enterprise access was rejected because the failure is limited to recovery-link routing.

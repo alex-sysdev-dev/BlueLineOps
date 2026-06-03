@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
+import { getSupabaseAuthBrowserClient } from '@/lib/supabase-auth-browser'
 import s from './LandingHero.module.css'
 
 // Globe uses WebGL — client only, no SSR
@@ -81,6 +82,49 @@ export default function LandingHero() {
   const activeShipments = useCountUp(24379)
   const [hovered, setHovered] = useState<string | null>(null)
   const h = (id: string) => hovered === id
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const nextPath = '/login?mode=update-password&status=recovery'
+    const code = url.searchParams.get('code')
+    const tokenHash = url.searchParams.get('token_hash')
+    const queryType = url.searchParams.get('type')
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''))
+    const hashType = hashParams.get('type')
+
+    if (code) {
+      const callbackUrl = new URL('/auth/callback', window.location.origin)
+      callbackUrl.searchParams.set('code', code)
+      callbackUrl.searchParams.set('next', nextPath)
+      window.location.replace(callbackUrl.toString())
+      return
+    }
+
+    if (tokenHash) {
+      const confirmUrl = new URL('/auth/confirm', window.location.origin)
+      confirmUrl.searchParams.set('token_hash', tokenHash)
+      confirmUrl.searchParams.set('type', queryType ?? 'recovery')
+      confirmUrl.searchParams.set('next', nextPath)
+      window.location.replace(confirmUrl.toString())
+      return
+    }
+
+    if (hashType === 'recovery') {
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+
+      if (!accessToken || !refreshToken) {
+        window.location.replace('/login?mode=reset&error=callback')
+        return
+      }
+
+      getSupabaseAuthBrowserClient()
+        .auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error }) => {
+          window.location.replace(error ? '/login?mode=reset&error=callback' : nextPath)
+        })
+    }
+  }, [])
 
   return (
     <div className="bg-black text-zinc-100">
