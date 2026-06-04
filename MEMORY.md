@@ -199,3 +199,8 @@
 **What was decided:** Add a root-page handler that detects Supabase password-recovery links landing on `/` with `code`, `token_hash`, or recovery hash tokens and forwards them into the existing `/auth/callback`, `/auth/confirm`, or `/login?mode=update-password&status=recovery` flow.
 **Why:** A Supabase reset-password email sent Alexander back to the landing page, which left the recovery session unused and blocked password reset.
 **What was rejected:** Replacing the whole login flow or weakening enterprise access was rejected because the failure is limited to recovery-link routing.
+
+## 2026-06-04, Dashboard timeline labels hydrate after mount
+**What was decided:** Initialize dashboard chart timeline labels without a server-side `Date.now()` value and set the live clock after client hydration.
+**Why:** The operations dashboard rendered minute labels on the server that could differ from the browser's first render, causing a React hydration mismatch.
+**What was rejected:** Hiding the dashboard charts or removing the live label updates was rejected because the issue was limited to nondeterministic initial render timing.
