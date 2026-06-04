@@ -33,7 +33,13 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
   const { pathname } = request.nextUrl
 
-  if (isLocalDevPlatformAccessEnabled() && pathname === '/login') {
+  const loginMode = request.nextUrl.searchParams.get('mode')
+
+  if (
+    isLocalDevPlatformAccessEnabled() &&
+    pathname === '/login' &&
+    (loginMode === null || loginMode === 'login' || loginMode === 'enterprise')
+  ) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/dashboard'
     redirectUrl.search = ''

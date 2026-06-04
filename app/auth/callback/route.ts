@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
   if (error) {
     const failureUrl = request.nextUrl.clone()
-    failureUrl.pathname = '/login'
+    failureUrl.pathname = next.startsWith('/update-password') ? '/update-password' : '/login'
     failureUrl.search = '?error=callback'
     response = NextResponse.redirect(failureUrl)
   }

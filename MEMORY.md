@@ -209,3 +209,8 @@
 **What was decided:** When `LOCAL_DEV_PLATFORM_ACCESS=true` outside production, `/login` redirects directly to `/dashboard`, and local `.env.local` keeps both owner emails on one `ENTERPRISE_ACCESS_EMAILS` line.
 **Why:** Alexander's local developer session could get stuck on a stale Supabase magic-link callback message even though protected app routes already allow the local developer bypass.
 **What was rejected:** Weakening production auth or requiring another magic-link round trip for local developer review was rejected because the issue is limited to local development access.
+
+## 2026-06-04, Password recovery uses dedicated update-password route
+**What was decided:** Add `/update-password` as the dedicated password recovery page and route Supabase recovery callbacks, token-hash confirms, and old landing-page recovery links there.
+**Why:** Password reset emails must land on a clear new-password form, not the general `/login` page or a local developer bypass redirect.
+**What was rejected:** Keeping reset as a hidden `/login?mode=update-password` state was rejected because it made recovery links fragile and hid the reset card from users.

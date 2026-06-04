@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getSupabaseAuthBrowserClient } from '@/lib/supabase-auth-browser'
@@ -61,6 +61,39 @@ export default function LoginForm({
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(initialMessage)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (mode !== 'update-password' || typeof window === 'undefined') {
+      return
+    }
+
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    if (hashParams.get('type') !== 'recovery') {
+      return
+    }
+
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    if (!accessToken || !refreshToken) {
+      setError('That reset link could not be confirmed. Request a fresh reset link.')
+      return
+    }
+
+    async function applyRecoverySession() {
+      const { error: sessionError } = await getSupabaseAuthBrowserClient()
+        .auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+
+        if (sessionError) {
+          setError('That reset link could not be confirmed. Request a fresh reset link.')
+          return
+        }
+
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+        setMessage('Enter a new password to finish resetting your account.')
+    }
+
+    void applyRecoverySession()
+  }, [mode])
 
   function switchMode(nextMode: LoginMode) {
     setMode(nextMode)
@@ -129,7 +162,7 @@ export default function LoginForm({
 
       if (mode === 'reset') {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/login?mode=update-password&status=recovery')}`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/update-password?status=recovery')}`,
         })
 
         if (resetError) {
@@ -416,9 +449,9 @@ export default function LoginForm({
                   Log In
                 </button>
               ) : null}
-              {mode !== 'reset' && mode !== 'update-password' ? (
+              {mode !== 'reset' ? (
                 <button type="button" onClick={() => switchMode('reset')} className="text-zinc-500 hover:text-zinc-300">
-                  Reset Password
+                  {mode === 'update-password' ? 'Request Fresh Link' : 'Reset Password'}
                 </button>
               ) : null}
             </div>

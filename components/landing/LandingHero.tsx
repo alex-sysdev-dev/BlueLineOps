@@ -85,7 +85,7 @@ export default function LandingHero() {
 
   useEffect(() => {
     const url = new URL(window.location.href)
-    const nextPath = '/login?mode=update-password&status=recovery'
+    const nextPath = '/update-password?status=recovery'
     const code = url.searchParams.get('code')
     const tokenHash = url.searchParams.get('token_hash')
     const queryType = url.searchParams.get('type')
@@ -121,7 +121,7 @@ export default function LandingHero() {
       getSupabaseAuthBrowserClient()
         .auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
         .then((sessionResult: { error: unknown }) => {
-          window.location.replace(sessionResult.error ? '/login?mode=reset&error=callback' : nextPath)
+          window.location.replace(sessionResult.error ? '/update-password?error=callback' : nextPath)
         })
     }
   }, [])
