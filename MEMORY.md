@@ -204,3 +204,8 @@
 **What was decided:** Initialize dashboard chart timeline labels without a server-side `Date.now()` value and set the live clock after client hydration.
 **Why:** The operations dashboard rendered minute labels on the server that could differ from the browser's first render, causing a React hydration mismatch.
 **What was rejected:** Hiding the dashboard charts or removing the live label updates was rejected because the issue was limited to nondeterministic initial render timing.
+
+## 2026-06-04, Local developer bypass redirects login to dashboard
+**What was decided:** When `LOCAL_DEV_PLATFORM_ACCESS=true` outside production, `/login` redirects directly to `/dashboard`, and local `.env.local` keeps both owner emails on one `ENTERPRISE_ACCESS_EMAILS` line.
+**Why:** Alexander's local developer session could get stuck on a stale Supabase magic-link callback message even though protected app routes already allow the local developer bypass.
+**What was rejected:** Weakening production auth or requiring another magic-link round trip for local developer review was rejected because the issue is limited to local development access.

@@ -33,6 +33,13 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
   const { pathname } = request.nextUrl
 
+  if (isLocalDevPlatformAccessEnabled() && pathname === '/login') {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/dashboard'
+    redirectUrl.search = ''
+    return NextResponse.redirect(redirectUrl)
+  }
+
   if (isLocalDevPlatformAccessEnabled() && isProtectedPath(pathname)) {
     return response
   }
