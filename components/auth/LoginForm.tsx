@@ -158,21 +158,24 @@ export default function LoginForm({
         return
       }
 
-      const supabase = getSupabaseAuthBrowserClient()
-
       if (mode === 'reset') {
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/update-password?status=recovery')}`,
+        const resetResponse = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: normalizedEmail }),
         })
+        const resetPayload = (await resetResponse.json().catch(() => null)) as { message?: string } | null
 
-        if (resetError) {
-          setError(resetError.message)
+        if (!resetResponse.ok) {
+          setError(resetPayload?.message ?? 'Could not send password reset email.')
           return
         }
 
-        setMessage('Password reset link sent. Check your email.')
+        setMessage(resetPayload?.message ?? 'Password reset link sent. Check your email.')
         return
       }
+
+      const supabase = getSupabaseAuthBrowserClient()
 
       if (mode === 'update-password') {
         if (!passwordMeetsMinimum(password)) {
