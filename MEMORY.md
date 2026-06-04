@@ -214,3 +214,8 @@
 **What was decided:** Add `/update-password` as the dedicated password recovery page and route Supabase recovery callbacks, token-hash confirms, and old landing-page recovery links there.
 **Why:** Password reset emails must land on a clear new-password form, not the general `/login` page or a local developer bypass redirect.
 **What was rejected:** Keeping reset as a hidden `/login?mode=update-password` state was rejected because it made recovery links fragile and hid the reset card from users.
+
+## 2026-06-04, Supabase recovery email uses emailTemplates source
+**What was decided:** Keep Alexander's standalone reset-password email in `emailTemplates`, generate a Supabase-ready HTML version with `{{ .ConfirmationURL }}`, and serve the extracted reset logo from `public/email/reset-password-logo.png`.
+**Why:** Supabase Auth needs a plain email HTML body with hosted assets and its recovery placeholder, while the standalone file contains preview-bundler scripts and local asset IDs.
+**What was rejected:** Pasting the standalone bundle directly into Supabase was rejected because email clients and Supabase templates should not receive JavaScript wrapper code or bundle-local image references.
