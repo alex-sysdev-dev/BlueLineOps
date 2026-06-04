@@ -25,19 +25,31 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;')
 }
 
-export function buildResetPasswordEmail(resetUrl: string) {
+export type ResetPasswordEmailInput = {
+  resetUrl: string
+  accountEmail: string
+  deliveredToEmail: string
+}
+
+export function buildResetPasswordEmail(input: ResetPasswordEmailInput) {
+  const { resetUrl } = input
   const htmlSafeResetUrl = escapeHtml(resetUrl)
   const html = getTemplate().replaceAll('{{ .ConfirmationURL }}', htmlSafeResetUrl)
   const subject = 'Reset your BlueLineOps password'
+  const deliveryNote =
+    input.accountEmail === input.deliveredToEmail
+      ? ''
+      : `This link resets the BlueLineOps account for ${input.accountEmail}.`
   const text = [
     'Reset your BlueLineOps password',
     '',
     'We received a request to reset the password for your BlueLineOps account.',
+    deliveryNote,
     'Open this secure link to choose a new password:',
     resetUrl,
     '',
     'If you did not request this, you can ignore this email.',
-  ].join('\n')
+  ].filter(Boolean).join('\n')
 
   return { subject, text, html }
 }

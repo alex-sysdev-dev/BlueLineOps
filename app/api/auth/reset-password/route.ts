@@ -23,6 +23,20 @@ function buildRecoveryRedirectUrl(request: NextRequest): string {
   return callbackUrl.toString()
 }
 
+function getDeliveryEmail(accountEmail: string): string {
+  const overrides = process.env.PASSWORD_RESET_EMAIL_DELIVERY_OVERRIDES ?? ''
+  const accountEmailKey = accountEmail.toLowerCase()
+
+  for (const override of overrides.split(',')) {
+    const [fromAccount, toInbox] = override.split('=').map((value) => value?.trim().toLowerCase())
+    if (fromAccount === accountEmailKey && toInbox && isEmail(toInbox)) {
+      return toInbox
+    }
+  }
+
+  return accountEmail
+}
+
 export async function POST(request: NextRequest) {
   const payload = (await request.json().catch(() => null)) as ResetPasswordPayload | null
   const email = clean(payload?.email).toLowerCase()
@@ -62,7 +76,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Password reset link was not returned.' }, { status: 502 })
   }
 
-  const emailContent = buildResetPasswordEmail(resetUrl)
+  const deliveryEmail = getDeliveryEmail(email)
+  const emailContent = buildResetPasswordEmail({
+    resetUrl,
+    accountEmail: email,
+    deliveredToEmail: deliveryEmail,
+  })
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -71,7 +90,7 @@ export async function POST(request: NextRequest) {
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: [email],
+      to: [deliveryEmail],
       subject: emailContent.subject,
       text: emailContent.text,
       html: emailContent.html,
