@@ -45,11 +45,13 @@ export default function OperationsTrendBoard({ title, description, summary, metr
 
   const metricSeed = metrics.map((metric, index) => buildSeed(metric.level, index))
   const [points, setPoints] = useState(metricSeed)
-  const [timelineEnd, setTimelineEnd] = useState(() => Date.now())
+  const [timelineEnd, setTimelineEnd] = useState<number | null>(null)
   const seedRef = useRef(metricSeed)
   const tickRef = useRef(metricSeed[0]?.length ?? 0)
 
   useEffect(() => {
+    setTimelineEnd(Date.now())
+
     const intervalId = window.setInterval(() => {
       startTransition(() => {
         setPoints((current) =>
@@ -64,7 +66,7 @@ export default function OperationsTrendBoard({ title, description, summary, metr
           })
         )
         tickRef.current += 1
-        setTimelineEnd((current) => current + 15 * 60_000)
+        setTimelineEnd((current) => (current ?? Date.now()) + 15 * 60_000)
       })
     }, 2400)
 
@@ -82,7 +84,7 @@ export default function OperationsTrendBoard({ title, description, summary, metr
   const chartHeight = height - padding.top - padding.bottom
   const labels = points[0].map((_, index) => {
     const distance = points[0].length - 1 - index
-    return formatTimelineLabel(timelineEnd - distance * 15 * 60_000)
+    return timelineEnd === null ? '' : formatTimelineLabel(timelineEnd - distance * 15 * 60_000)
   })
   const xTickStep = Math.max(1, Math.ceil(labels.length / 6))
 

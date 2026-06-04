@@ -71,11 +71,13 @@ export default function OperationsFlowPanel({
 
   const initialSeed = seed.length > 0 ? seed : [{ backlog: 56, cpt: 34, flow: 62, capacity: 48 }]
   const [points, setPoints] = useState<OperationsFlowPoint[]>(initialSeed)
-  const [timelineEnd, setTimelineEnd] = useState(() => Date.now())
+  const [timelineEnd, setTimelineEnd] = useState<number | null>(null)
   const seedRef = useRef(initialSeed)
   const tickRef = useRef(initialSeed.length)
 
   useEffect(() => {
+    setTimelineEnd(Date.now())
+
     const intervalId = window.setInterval(() => {
       startTransition(() => {
         setPoints((current) => {
@@ -95,7 +97,7 @@ export default function OperationsFlowPanel({
           return [...source.slice(1), nextPoint]
         })
 
-        setTimelineEnd((current) => current + WINDOW_MINUTES * 60_000)
+        setTimelineEnd((current) => (current ?? Date.now()) + WINDOW_MINUTES * 60_000)
       })
     }, TICK_MS)
 
@@ -121,7 +123,7 @@ export default function OperationsFlowPanel({
 
   const labels = points.map((_, index) => {
     const distance = points.length - 1 - index
-    return formatTimelineLabel(timelineEnd - distance * WINDOW_MINUTES * 60_000)
+    return timelineEnd === null ? "" : formatTimelineLabel(timelineEnd - distance * WINDOW_MINUTES * 60_000)
   })
 
   const current = points[points.length - 1] ?? initialSeed[initialSeed.length - 1]
