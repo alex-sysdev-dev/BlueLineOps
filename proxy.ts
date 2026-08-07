@@ -3,6 +3,7 @@ import { createSupabaseAuthServerClient } from '@/lib/supabase-auth-server'
 import { getAppAccessRoleForEmail, isEnterpriseAccessEmail, isLocalDevPlatformAccessEnabled } from '@/lib/enterprise-access'
 
 const PROTECTED_PREFIXES = [
+  '/agents',
   '/associates',
   '/dashboard',
   '/forecasting',

@@ -41,4 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# local Codex project memory and error history
+/MEMORY.md
+/ERRORS.md

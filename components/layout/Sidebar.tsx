@@ -17,6 +17,7 @@ type Props = {
 
 const links = [
   { name: "BlueLineOps Dashboard", href: "/dashboard" },
+  { name: "Agent Control Center", href: "/agents" },
   { name: "Associates Dashboard", href: "/associates", hasDropdown: true },
   { name: "QA Dashboard", href: "/qa" },
   { name: "Inbound Dashboard", href: "/inbound" },
